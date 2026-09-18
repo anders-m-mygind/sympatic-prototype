@@ -85,43 +85,94 @@ SYM.instruments = {
 SYM.kundeOutcomes = { referred: 63, inCare: 27, stabilised: 21, escalated: 4, medianDaysToStable: 71, rtwRate: 0.78, prevalence: 0.11 };
 // ---- Graf: knowledge + memory layer (vector-embedded corpora; transcripts scoped per case) ----
 SYM.knowledge = {
-  summaryByCase: {
-    "C-1041": {
-      title: "Hvad Sofie og assistenten har talt om, uge 34–38",
-      text: "Samtalerne har handlet mest om søvn og om at få en arbejdsuge til at hænge sammen. Sofie har to gange beskrevet nætter næsten uden søvn, senest natten til søndag i uge 38, og assistenten har foreslået at bytte aktivitetsplanen ud med en kort søvnøvelse. Én gang (18.09) udtrykte hun håbløshed, hvilket udløste et hard stop til dig. Grænser på arbejdet er kommet op i tre samtaler, typisk i forbindelse med overarbejde i Drift.",
-      themes: [ { t: "Søvn", n: 6 }, { t: "Arbejdsplan", n: 4 }, { t: "Håbløshed", n: 1, tone: "danger" }, { t: "Grænser på arbejdet", n: 3 } ],
-      citations: ["chat-3", "chat-4", "sop-sleep-3", "prot-ba"],
-    },
+  // "Graf" = a structured, coded dataset. Raw transcript utterances are mapped by an extraction step onto a
+  // canonical taxonomy (ICD-11 concepts, the blended-care SOP as structured steps, protocol modules).
+  // The result is case facts (sagsfakta) with evidence, confidence and review state. Q/A speaks only from facts + SOP clauses.
+  taxonomy: {
+    "icd-7A00": { kind: "icd", label: "Søvnforstyrrelse", code: "ICD-11 7A00", desc: "Insomni-lidelser (kapitel 7). Kodes ved gentagne rapporter om svært nedsat søvn." },
+    "sym-hopeless": { kind: "symptom", label: "Håbløshed", code: "ICD-11 symptom MB24.8", desc: "Udtryk for håbløshed. Udløser altid SOP S1.1 (hard stop) uanset kodningssikkerhed." },
+    "icd-6A70": { kind: "icd", label: "Depressiv episode, moderat", code: "ICD-11 6A70.1", desc: "Kodes kun fra screeningsinstrument, aldrig fra chat alene." },
+    "icd-QD85": { kind: "icd", label: "Udbrændthed", code: "ICD-11 QD85", desc: "Arbejdsrelateret udmattelse. Kodes ved gentagne udsagn om overbelastning på arbejdet." },
+    "sop-B2.1": { kind: "sop", label: "Overbelastning på arbejde", code: "SOP B2.1 trigger", desc: "Trigger i blended-care SOP modul B2 (arbejdsevne)." },
+    "prot-ba": { kind: "protocol", label: "Springer øvelser over", code: "Protokol · adfærdsaktivering", desc: "≥ 3 oversprungne aktiviteter på en uge." },
+    "prot-sleep": { kind: "protocol", label: "Søvnøvelse foreslået", code: "Protokol · søvnmodul", desc: "Assistenten har foreslået erstatning af dagens øvelse." },
+    "sop-B1.4": { kind: "sop", label: "Foretrækker menneskelig kontakt", code: "SOP B1.4", desc: "Præference registreret fra screening eller chat." },
   },
-  // citations: chat-N points at SYM.thread index N; sop/prot point at excerpts below
+  // SOP clauses (structured steps). Citable by id.
+  sop: {
+    "SOP B3.2": { title: "Søvnmodul · trin 2 · erstatning af dagens øvelse", module: "B3 Søvn", version: "v3", excerpt: "Når personen rapporterer markant søvnmangel (under 4 timer to nætter i træk, eller 'næsten ikke sovet'), må assistenten foreslå at erstatte dagens planlagte øvelse med en søvnhygiejne-øvelse på højst 6 minutter. Forslaget skal fremgå for behandler i tråden." },
+    "SOP B3.3": { title: "Søvnmodul · trin 3 · niveau må ikke ændres", module: "B3 Søvn", version: "v3", excerpt: "Assistenten må ikke ændre forløbets niveau eller antallet af ugentlige aktiviteter på grund af søvn. Niveauskift er en beslutningspost, der signeres af behandler." },
+    "SOP B3.5": { title: "Søvnmodul · trin 5 · faste sengetider", module: "B3 Søvn", version: "v3", excerpt: "Faste sengetider indføres som øvelse i uge 2 af søvnmodulet. Gennemførelse registreres som protokoltrin og indgår i behandlerens tjekliste." },
+    "SOP S1.1": { title: "Sikkerhed · trin 1 · håbløshed og selvskade", module: "S1 Sikkerhed", version: "v3", excerpt: "Udtryk for håbløshed, ønske om at være død eller selvskade i chat udløser hard stop uden AI-vurdering. Behandler kontakter personen samme dag. Assistenten svarer med den faste sikkerhedstekst og henviser til Akut hjælp." },
+    "SOP B2.1": { title: "Arbejdsevne · trin 1 · overbelastning som trigger", module: "B2 Arbejdsevne", version: "v3", excerpt: "Gentagne udsagn om overbelastning eller overarbejde kodes som trigger B2.1. Ved tre eller flere forekomster foreslår assistenten modulet 'Grænser på arbejdet' til behandler." },
+    "SOP B2.4": { title: "Arbejdsevne · trin 4 · arbejdspladsdialog", module: "B2 Arbejdsevne", version: "v3", excerpt: "Arbejdspladsdialog planlægges af behandler, aldrig af assistenten, og kun med personens udtrykkelige samtykke." },
+    "PROT M2.3": { title: "Adfærdsaktivering · oversprungne aktiviteter", module: "Protokol modul 2", version: "v3", excerpt: "Ved tre eller flere oversprungne aktiviteter på en uge opsummerer assistenten til behandler og må ikke øge antallet af aktiviteter." },
+  },
+  // evidence citations into the case thread (idx = SYM.thread index)
   cites: {
     "chat-1": { kind: "chat", case: "C-1041", idx: 1, label: "Chat 15.09 08:15" },
     "chat-3": { kind: "chat", case: "C-1041", idx: 3, label: "Chat 15.09 08:17" },
     "chat-4": { kind: "chat", case: "C-1041", idx: 4, label: "Chat 15.09 08:17 (assistent)" },
     "chat-5": { kind: "chat", case: "C-1041", idx: 5, label: "Chat 15.09 09:40 (Mette)" },
-    "sop-sleep-3": { kind: "sop", label: "SOP: Søvnmodul §3", source: "Encounter SOP · Søvnmodul v2 · §3 Erstatning af øvelse", excerpt: "Når en person rapporterer markant søvnmangel (under 4 timer to nætter i træk, eller subjektivt 'næsten ikke sovet'), kan assistenten foreslå at erstatte dagens planlagte øvelse med en kort søvnhygiejne-øvelse (max 6 min). Forslaget skal fremgå for behandler i tråden. Assistenten må ikke ændre planens niveau." },
-    "sop-hardstop": { kind: "sop", label: "SOP: Hard stop §1", source: "Encounter SOP · Sikkerhed v3 · §1 Udtryk for håbløshed eller selvskade", excerpt: "Udtryk for håbløshed, ønske om at være død eller selvskade i chat udløser et hard stop uden AI-vurdering. Behandler kontakter personen samme dag. Assistenten svarer med den faste sikkerhedstekst og henviser til Akut hjælp." },
-    "prot-ba": { kind: "sop", label: "Protokol: Adfærdsaktivering", source: "Klinisk protokol v3 · Modul 2 Adfærdsaktivering", excerpt: "Adfærdsaktivering indledes med en ugentlig aktivitetsplan med 3–5 aktiviteter, der balancerer pligt og glæde. Ved gentagne oversprungne aktiviteter (≥ 3 på en uge) skal assistenten opsummere til behandler og må ikke øge antallet af aktiviteter." },
-    "ref-phq9": { kind: "sop", label: "Reference: PHQ-9 item 9", source: "Klinisk reference · PHQ-9 scoringsvejledning (DK)", excerpt: "Item 9 (tanker om at være død eller om at gøre sig selv fortræd) scores 0–3. Enhver score ≥ 1 skal følges op klinisk uanset totalscore." },
+    "chat-hs": { kind: "chat", case: "C-1041", idx: 1, label: "Chat 18.09 07:41" },
+    "chat-w36": { kind: "chat", case: "C-1041", idx: 1, label: "Chat 04.09 19:22" },
+    "chat-w37": { kind: "chat", case: "C-1041", idx: 3, label: "Chat 10.09 08:05" },
+    "scr-1": { kind: "chat", case: "C-1041", idx: 0, label: "Screening 27.08" },
   },
+  // coded case facts, per case
+  factsByCase: {
+    "C-1041": [
+      { id: "F-12", concept: "icd-7A00", n: 6, first: "04.09", last: "15.09", ev: ["chat-w36", "chat-w37", "chat-3"], conf: 0.91, status: "confirmed", by: "Mette" },
+      { id: "F-14", concept: "sym-hopeless", n: 1, first: "18.09", last: "18.09", ev: ["chat-hs"], conf: 0.97, status: "confirmed", by: "Mette", note: "Udløste hard stop D-311" },
+      { id: "F-15", concept: "prot-sleep", n: 1, first: "15.09", last: "15.09", ev: ["chat-4"], conf: 0.99, status: "confirmed", by: "system" },
+      { id: "F-17", concept: "sop-B2.1", n: 3, first: "04.09", last: "10.09", ev: ["chat-w36", "chat-w37"], conf: 0.78, status: "unconfirmed" },
+      { id: "F-18", concept: "prot-ba", n: 3, first: "12.09", last: "17.09", ev: ["chat-1"], conf: 0.88, status: "unconfirmed", note: "3 af 4 øvelser sprunget over uge 38" },
+      { id: "F-19", concept: "icd-QD85", n: 2, first: "04.09", last: "10.09", ev: ["chat-w36"], conf: 0.52, status: "unconfirmed" },
+      { id: "F-11", concept: "icd-6A70", n: 1, first: "27.08", last: "27.08", ev: ["scr-1"], conf: 0.94, status: "confirmed", by: "Mette", note: "PHQ-9 = 16 ved screening" },
+      { id: "F-16", concept: "sop-B1.4", n: 1, first: "27.08", last: "27.08", ev: ["scr-1"], conf: 0.41, status: "rejected", by: "Mette", note: "Afvist: svaret var 'ingen præference'" },
+    ],
+  },
+  // Q/A: closed world. Each answer is a list of claims; each claim cites fact ids and/or SOP clause ids.
   answers: [
-    { match: /sidste uge|7 dage|talte i/i, text: "I sidste uge talte Sofie og assistenten primært om søvn. Hun beskrev en nat næsten uden søvn natten til søndag, og assistenten foreslog at bytte aktivitetsplanen ud med en kort søvnøvelse. Du svarede mandag kl. 09:40, at I tager det op onsdag. Ingen nye udtryk for håbløshed siden hard stoppet 18.09.", cites: ["chat-3", "chat-4", "chat-5"] },
-    { match: /søvn|sleep/i, text: "Protokollen tillader, at assistenten erstatter dagens øvelse med en kort søvnhygiejne-øvelse ved markant søvnmangel, men ikke at niveauet ændres. Sofies søvnproblem er nævnt 6 gange i tråden, senest 15.09. Søvnmodulet er introduceret, men faste sengetider er endnu ikke gennemført.", cites: ["sop-sleep-3", "chat-3"] },
-    { match: /håbløs|hard stop|selvskade/i, text: "Der er ét udtryk for håbløshed i tråden (18.09 kl. 07:41), som udløste hard stop D-311 uden AI-vurdering. Ifølge SOP skal du kontakte Sofie samme dag. PHQ-9 item 9 var 2 ved seneste screening.", cites: ["sop-hardstop", "ref-phq9"] },
-    { match: /.*/, text: "Sofie er i guidet forløb siden 28.08 med adfærdsaktivering og søvn. De seneste 7 dage er 3 af 4 øvelser sprunget over, og arbejdsevnen er faldet fra 5 til 4. Assistenten har foreslået en søvnøvelse i stedet for aktivitetsplanen. Der er et åbent niveauskift (D-308) til dig.", cites: ["chat-4", "prot-ba"] },
+    { match: /alkohol|alcohol|misbrug/i, claims: [], none: true },
+    { match: /sidste uge|7 dage|talte i/i, claims: [
+        { text: "I uge 38 er søvnforstyrrelse kodet én gang (15.09), og assistenten foreslog en søvnøvelse i stedet for aktivitetsplanen.", cites: ["F-12", "F-15"] },
+        { text: "Tre af fire planlagte øvelser blev sprunget over i uge 38.", cites: ["F-18"] },
+        { text: "Der er ét udtryk for håbløshed (18.09), som udløste hard stop D-311.", cites: ["F-14", "SOP S1.1"] },
+      ], dropped: ["Sofie virker generelt mere presset af arbejdet end tidligere."] },
+    { match: /søvn|sleep/i, claims: [
+        { text: "Assistenten må foreslå at erstatte dagens øvelse med en søvnhygiejne-øvelse på højst 6 minutter ved markant søvnmangel.", cites: ["SOP B3.2"] },
+        { text: "Forløbets niveau og antallet af aktiviteter må ikke ændres på grund af søvn; det kræver en signeret beslutning.", cites: ["SOP B3.3"] },
+        { text: "Faste sengetider indføres som øvelse i uge 2 af søvnmodulet og registreres som protokoltrin.", cites: ["SOP B3.5"] },
+      ] },
+    { match: /håbløs|hard stop|selvskade/i, claims: [
+        { text: "Håbløshed er kodet én gang, 18.09 kl. 07:41.", cites: ["F-14"] },
+        { text: "Udtryk for håbløshed udløser hard stop uden AI-vurdering, og behandler kontakter personen samme dag.", cites: ["SOP S1.1"] },
+      ] },
+    { match: /arbejd|overbelast|grænser/i, claims: [
+        { text: "Overbelastning på arbejde er kodet tre gange (04.09–10.09) og er endnu ubekræftet.", cites: ["F-17"] },
+        { text: "Ved tre eller flere forekomster foreslår assistenten modulet 'Grænser på arbejdet' til behandler.", cites: ["SOP B2.1"] },
+        { text: "Arbejdspladsdialog planlægges kun af behandler og kun med personens samtykke.", cites: ["SOP B2.4"] },
+      ] },
+    { match: /.*/, claims: [
+        { text: "Sagen har 7 kodede fakta, hvoraf 4 er bekræftet, 3 ubekræftede og 1 afvist.", cites: ["F-12", "F-14", "F-11"] },
+        { text: "Tre oversprungne øvelser i uge 38 kræver, at assistenten opsummerer til behandler og ikke øger antallet af aktiviteter.", cites: ["F-18", "PROT M2.3"] },
+      ] },
   ],
+  // admin: taxonomy & SOP overview
   corpora: [
-    { id: "clin", name: "Klinisk reference", count: "1 240 afsnit", meta: "Opdateret 12.09 · Kilde: ICD-11 + NKR + protokol", status: "Indekseret", tone: "success", scope: "Fælles for alle sager" },
-    { id: "sop", name: "Encounter SOP", count: "86 dokumenter", meta: "2 afventer godkendelse hos Kim Mathiasen", status: "2 afventer", tone: "warning", scope: "Fælles for alle sager" },
-    { id: "tx", name: "Sagstransskripter", count: "8 sager", meta: "Embeddes løbende · kun tilgængelig inden for sagen", status: "Løbende", tone: "primary", scope: "Pr. sag · aldrig på tværs" },
+    { id: "icd", name: "ICD-11 begreber", count: "412 begreber i brug", meta: "Kapitel 6 (mentale lidelser) + symptomkapitel · WHO-release 2026-01", status: "Kanonisk", tone: "success", scope: "Fælles for alle sager" },
+    { id: "sop", name: "Blended-care SOP", count: "14 moduler · 96 trin", meta: "Version 3 · 2 trin afventer godkendelse hos Kim Mathiasen", status: "2 afventer", tone: "warning", scope: "Fælles for alle sager" },
+    { id: "prot", name: "Protokol-moduler", count: "9 moduler", meta: "CBT tilpasset erhvervsevne · 41 trin", status: "Kanonisk", tone: "success", scope: "Fælles for alle sager" },
   ],
-  embedder: "bge-m3 · self-hosted",
-  ingest: [
-    { doc: "Søvnmodul v2 (SOP)", corpus: "Encounter SOP", chunks: 41, ver: "bge-m3 self-hosted", status: "Indekseret", at: "18.09 06:02" },
-    { doc: "C-1041 · tråd uge 38", corpus: "Sagstransskripter", chunks: 12, ver: "bge-m3 self-hosted", status: "Indekseret", at: "18.09 05:40" },
-    { doc: "Sikkerhed v3 (SOP)", corpus: "Encounter SOP", chunks: 18, ver: "bge-m3 self-hosted", status: "Afventer godkendelse", at: "17.09 14:10" },
-    { doc: "NKR Depression 2025 (uddrag)", corpus: "Klinisk reference", chunks: 310, ver: "bge-m3 self-hosted", status: "Indekseret", at: "12.09 09:15" },
-    { doc: "Tilbagefaldsforebyggelse (SOP)", corpus: "Encounter SOP", chunks: 27, ver: "bge-m3 self-hosted", status: "Afventer godkendelse", at: "11.09 16:48" },
-    { doc: "C-1039 · tråd uge 37", corpus: "Sagstransskripter", chunks: 9, ver: "bge-m3 self-hosted", status: "Indekseret", at: "11.09 05:41" },
+  extraction: { today: 63, avgConf: 0.84, rejected30: 11, pending: 9 },
+  reviewQueue: [
+    { fact: "F-17", case: "C-1041", concept: "sop-B2.1", conf: 0.78, status: "unconfirmed" },
+    { fact: "F-19", case: "C-1041", concept: "icd-QD85", conf: 0.52, status: "unconfirmed" },
+    { fact: "F-31", case: "C-1039", concept: "icd-7A00", conf: 0.69, status: "unconfirmed" },
+    { fact: "F-33", case: "C-1030", concept: "sym-hopeless", conf: 0.95, status: "confirmed", by: "Jonas" },
+    { fact: "F-28", case: "C-1039", concept: "prot-ba", conf: 0.44, status: "unconfirmed" },
+    { fact: "F-22", case: "C-1044", concept: "sop-B1.4", conf: 0.81, status: "confirmed", by: "Mette" },
   ],
 };
+
