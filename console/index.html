@@ -206,6 +206,38 @@ td .who,td .b,.level em,.trend,td .chip{white-space:nowrap}
 .form textarea{min-height:90px}
 .notice{border:1px solid var(--sym-info);background:var(--sym-info-soft);border-radius:12px;padding:10px 14px;font-size:12.5px;color:var(--sym-text)}
 .notice.warn{border-color:var(--sym-warning);background:var(--sym-warning-soft)}
+.main>*{flex:0 0 auto}
+.ground .p{font-size:13px;line-height:20px;color:var(--sym-text)}
+.themes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.themes .chip b{font-weight:700;margin-left:2px}
+.cites{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cite{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--sym-border-strong);background:var(--sym-surface);border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:500;color:var(--sym-text-2);cursor:pointer;line-height:16px}
+.cite:hover{border-color:var(--sym-primary);color:var(--sym-primary)}
+.cite.sop:before{content:"";width:7px;height:7px;background:var(--sym-primary);border-radius:1px;opacity:.85}
+.cite.chat:before{content:"";width:7px;height:7px;background:var(--sym-text-3);border-radius:50%}
+.answer{border:1px solid var(--sym-border);background:var(--sym-surface-sunken);border-radius:12px;padding:10px 12px;margin-top:8px}
+.answer .q{font-size:11.5px;color:var(--sym-text-3);margin-bottom:4px}
+.answer .a{font-size:12.5px;line-height:19px}
+.answer .fn{font-size:10.5px;color:var(--sym-text-3);margin-top:8px;line-height:14px}
+.presets{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.presets button{text-align:left;font-size:12px;padding:6px 10px;border:1px solid var(--sym-border);border-radius:8px;background:var(--sym-surface);color:var(--sym-text-2)}
+.presets button:hover{border-color:var(--sym-primary);color:var(--sym-primary)}
+.askrow{display:flex;gap:6px;align-items:center;margin-top:8px}
+.askrow input{flex:1;min-width:0}
+.msg.focus .bub{outline:2px solid var(--sym-primary);outline-offset:2px}
+.sheetwrap{position:fixed;inset:0;background:rgba(20,33,29,.28);z-index:40;display:flex;justify-content:flex-end}
+.sheet{width:420px;max-width:92vw;height:100%;background:var(--sym-surface);box-shadow:var(--sym-shadow-pop);padding:22px 24px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet .src{font-size:11.5px;color:var(--sym-text-3)}
+.sheet h3{font-size:16px;font-weight:600}
+.sheet .ex{font-size:13.5px;line-height:21px;border-left:3px solid var(--sym-primary);padding-left:12px;color:var(--sym-text)}
+.sheet .foot{margin-top:auto;display:flex;gap:8px}
+.corpora{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.corp{padding:16px 18px}
+.corp .n{font-size:14px;font-weight:600}
+.corp .c{font-size:21px;font-weight:700;margin:6px 0 2px}
+.corp .m{font-size:12px;color:var(--sym-text-2);line-height:17px}
+.corp .sc{margin-top:10px}
+td.nowrap{white-space:nowrap}
 .pill-list{display:flex;gap:8px;flex-wrap:wrap}
 .legend{display:flex;gap:14px;font-size:11px;color:var(--sym-text-2);align-items:center}
 .legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
@@ -333,6 +365,7 @@ const state = {
   selDecision:null, signed:{}, verdict:{}, reason:{},
   rawShown:{}, selThread:"C-1041", drafts:{"C-1041":true,"C-1039":true},
   selMod:0, filter:"alle", audq:"", refCreated:false, selSess:null, campOn:true, selTenant:"k1",
+  ask:null, sheet:null, msgFocus:null,
 };
 
 /* ============ nav per role ============ */
@@ -340,10 +373,10 @@ const NAV = {
   behandler:[["conference","Konference",I.conf,()=>SYM.decisions.filter(d=>!state.signed[d.id]).length],["caseload","Mine forløb",I.cases],["messages","Beskeder",I.msg],["schedule","Kalender",I.cal],["protocol","Protokol",I.book]],
   firma:[["pulse","Pulse",I.pulse],["signals","Signaler",I.signal],["refer","Henvis",I.refer],["campaigns","Kampagner",I.camp],["reports","Rapporter",I.report]],
   kunde:[["referrals","Henvisninger",I.refer],["population","Population",I.pop],["outcomes","Udfald",I.out],["value","Værdi",I.value],["contracts","Aftaler",I.contract]],
-  admin:[["tenants","Tenants",I.tenant],["people","Personer & roller",I.cases],["protocol-edit","Protokol",I.book],["instruments","Instrumenter",I.list],["models","Modeller",I.model],["audit","Audit",I.audit],["data","Data",I.data]],
+  admin:[["tenants","Tenants",I.tenant],["people","Personer & roller",I.cases],["protocol-edit","Protokol",I.book],["instruments","Instrumenter",I.list],["models","Modeller",I.model],["knowledge","Vidensbase",I.book],["audit","Audit",I.audit],["data","Data",I.data]],
 };
 const USER = {behandler:["Mette Kjær","Psykolog · Encounter"],firma:["Lars Bruun","HR · Nordisk Logistik"],kunde:["Nina Skov","Skadeschef · PFA"],admin:["Anders Mygind","Platform · Sympatik"]};
-const ALLROUTES = [["behandler","#/conference"],["behandler","#/caseload"],["behandler","#/case/C-1041"],["behandler","#/messages"],["behandler","#/schedule"],["behandler","#/protocol"],["firma","#/pulse"],["firma","#/signals"],["firma","#/refer"],["firma","#/campaigns"],["firma","#/reports"],["kunde","#/referrals"],["kunde","#/population"],["kunde","#/outcomes"],["kunde","#/value"],["kunde","#/contracts"],["admin","#/tenants"],["admin","#/people"],["admin","#/protocol-edit"],["admin","#/instruments"],["admin","#/models"],["admin","#/audit"],["admin","#/data"]];
+const ALLROUTES = [["behandler","#/conference"],["behandler","#/caseload"],["behandler","#/case/C-1041"],["behandler","#/messages"],["behandler","#/schedule"],["behandler","#/protocol"],["firma","#/pulse"],["firma","#/signals"],["firma","#/refer"],["firma","#/campaigns"],["firma","#/reports"],["kunde","#/referrals"],["kunde","#/population"],["kunde","#/outcomes"],["kunde","#/value"],["kunde","#/contracts"],["admin","#/tenants"],["admin","#/people"],["admin","#/protocol-edit"],["admin","#/instruments"],["admin","#/models"],["admin","#/knowledge"],["admin","#/audit"],["admin","#/data"]];
 const ROUTE_ROLE = {};ALLROUTES.forEach(([r,h])=>ROUTE_ROLE[h.slice(2).split("/")[0]]=r);
 
 function renderNav(){
@@ -356,6 +389,16 @@ function topbar(title,sub,extra=""){
   return `<div class="topbar"><div><h2>${title}</h2><div class="sub">${sub}</div></div><div class="right">${extra}<span class="proto">Prototype · dummy data</span><span class="screens"><select id="screens" aria-label="Skærme"><option value="">Skærme</option>${opts}</select></span></div></div>`;
 }
 function railHead(t){return `<h3>${t}${I.arrow}</h3>`;}
+
+/* ============ Graf: grounding helpers ============ */
+const K=SYM.knowledge;
+function citeChip(id){const c=K.cites[id];if(!c)return "";return `<button class="cite ${c.kind}" data-cite="${id}" title="${c.kind==="chat"?"Åbn tråden ved denne besked":"Vis kilde"}">${esc(c.label)}</button>`;}
+function sheetHtml(){if(!state.sheet)return "";const c=K.cites[state.sheet];if(!c)return "";return `<div class="sheetwrap" id="sheetwrap"><div class="sheet" role="dialog" aria-label="Kilde"><div class="src">${esc(c.source)}</div><h3>${esc(c.label)}</h3><div class="ex">${esc(c.excerpt)}</div><div class="sub">Uddraget er hentet fra den embeddede kopi af dokumentet. Ordlyden er identisk med det godkendte dokument.</div><div class="foot"><button class="btn primary" id="sheetClose">Luk</button><button class="btn outline" data-toast="Åbner dokumentet i Vidensbase (prototype)">Åbn hele dokumentet</button></div></div></div>`;}
+function groundCard(caseId){const g=K.summaryByCase[caseId];if(!g)return `<div class="card ground"><div class="hd"><h3>Samtalegrundlag</h3></div><div class="bd"><div class="sub">Ingen samtaler embeddet for denne sag endnu. Grundlaget bygges løbende af sagens egne beskeder.</div></div></div>`;
+  return `<div class="card ground"><div class="hd"><h3>Samtalegrundlag</h3><div class="r"><span class="chip neutral nodot">Rullende resumé · kun denne sag</span></div></div><div class="bd"><div class="label">${esc(g.title)}</div><div class="p" style="margin-top:6px">${esc(g.text)}</div>
+  <div class="label" style="margin-top:14px">Temaer</div><div class="themes">${g.themes.map(t=>`<span class="chip ${t.tone||"primary"} nodot">${esc(t.t)}<b>${t.n}</b></span>`).join("")}</div>
+  <div class="label" style="margin-top:14px">Kilder</div><div class="cites">${g.citations.map(citeChip).join("")}</div></div></div>`;}
+function answerFor(q){const a=K.answers.find(x=>x.match.test(q));return {q,text:a.text,cites:a.cites};}
 
 /* ============ BEHANDLER ============ */
 function vConference(){
@@ -427,19 +470,22 @@ function vCase(id){
     <div class="card"><div class="hd"><h3>Forløb</h3><div class="r"><span class="legend"><i style="background:var(--sym-primary)"></i>PHQ-9<i style="background:var(--sym-success);margin-left:8px"></i>Arbejdsevne (0–10)<i style="background:var(--sym-primary-softer);border:1px solid var(--sym-border);margin-left:8px"></i>Guidet niveau</span></div></div><div class="bd">${chart}</div></div>
     <div class="card"><div class="hd"><h3>Plan</h3><div class="r"><span class="chip primary">${c.level?SYM.levelLabel[c.level]:"—"}</span></div></div><div class="bd"><div class="chk">${SYM.programme.map(e=>`<label><input type="checkbox" ${e.done?"checked":""} disabled><span>${esc(e.title)}<div class="sub">${e.module} · ${e.mins} min${e.today?" · i dag":""}</div></span></label>`).join("")}</div></div></div>
   </div>
+  ${groundCard(c.id)}
   <div class="grid32">
     <div class="card"><div class="hd"><h3>Tidslinje</h3></div><div class="bd"><div class="tl">${tl.map(t=>`<div class="it ${t.cls}"><div class="w">${t.w}</div><div class="tt">${esc(t.tt)}</div><div class="tx">${esc(t.tx)}</div></div>`).join("")}</div></div></div>
     <div class="card"><div class="hd"><h3>Protokol-tjekliste</h3><div class="r"><span class="chip success">4 / 6</span></div></div><div class="bd"><div class="chk">${["Psykoedukation gennemført","Adfærdsaktivering påbegyndt","Søvnmodul introduceret","Arbejdsevne-mål aftalt","Arbejdspladsdialog planlagt","Tilbagefaldsplan"].map((t,i)=>`<label><input type="checkbox" ${i<4?"checked":""}><span>${t}</span></label>`).join("")}</div>
       <div style="margin-top:16px"><span class="label">Screening · rå svar</span><div style="margin-top:8px"><button class="btn outline sm" id="raw">${raw?"Skjul rå svar":"Vis rå svar (logges)"}</button></div>
       ${raw?`<div class="raw">${SYM.instruments.phq9.map((q,i)=>`<span>${i+1}. ${q}</span><span>${[2,2,3,2,1,2,1,1,2][i]}</span>`).join("")}</div><div class="audnote">Audit: Mette Kjær åbnede rå PHQ-9-svar for ${c.id} kl. ${new Date().toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"})}. Hændelsen er skrevet til audit-loggen og kan ses af personen.</div>`:""}</div></div></div>
-  </div>`;
+  </div>${sheetHtml()}`;
 }
 function railCase(id){const c=C(id);if(!c)return "";const p=P(c.person);const open=SYM.decisions.filter(d=>d.case===c.id&&!state.signed[d.id]);
   return railHead("Forløbs-workspace")+`<div class="selcard"><div class="who">${av(p)}<div><div class="b" style="font-size:13.5px">${esc(p.name)}</div><div class="sub">${stateChip(c.state)}</div></div></div></div>
   <div class="sec"><span class="label">Afventer dig</span>${open.length?open.map(d=>`<a class="btn outline" href="#/conference" data-sel="${d.id}" style="justify-content:flex-start">${SYM.kindLabel[d.kind]} · ${d.id}</a>`).join(""):'<div class="sub">Ingen åbne beslutninger.</div>'}</div>
   <div class="sec"><span class="label">Detaljer</span><div class="kv"><span>Kilde</span><b>${srcLabel[c.source]}</b></div><div class="kv"><span>Åbnet</span><b>${fmtD(c.opened)}</b></div><div class="kv"><span>Videosessioner</span><b>${c.level==="blended"?"1 / 3":"0 / 3"}</b></div><div class="kv"><span>Arbejdsplads ser</span><b>Kun aggregat</b></div></div>
   <div class="sec"><span class="label">Værktøjer</span><a class="btn outline" href="#/messages">Åbn tråd</a><button class="btn outline" data-toast="Videosession foreslået · afventer signatur">Foreslå videosession</button><button class="btn danger" data-toast="Hard stop oprettet · ${c.id} sat øverst i konferencen">Opret hard stop</button></div>
-  <div class="sec"><span class="label">Spørg assistenten</span><div class="who">${hex("AI")}<input class="searchbox" style="width:100%" placeholder="Opsummér de sidste 7 dage…"></div></div>`;}
+  <div class="sec"><span class="label">Spørg assistenten</span><div class="askrow">${hex("AI")}<input class="searchbox" id="askq" placeholder="Opsummér de sidste 7 dage…" value="${esc(state.askq||"")}"><button class="btn primary sm" id="askSend">Spørg</button></div>
+  <div class="presets"><button data-ask="Hvad talte I om i sidste uge?">Hvad talte I om i sidste uge?</button><button data-ask="Hvad siger protokollen om søvn?">Hvad siger protokollen om søvn?</button></div>
+  ${state.ask?`<div class="answer"><div class="q">${esc(state.ask.q)}</div><div class="a">${esc(state.ask.text)}</div><div class="cites">${state.ask.cites.map(citeChip).join("")}</div><div class="fn">Svar er grundet i sagens egne beskeder og Encounters SOP. Ikke i andre personers data.</div></div>`:""}</div>`;}
 
 function vMessages(){
   const threads=SYM.cases.filter(c=>c.state==="in_care"||c.state==="post_care");
@@ -448,11 +494,11 @@ function vMessages(){
   const draft=state.drafts[sel]?{who:"assistant",draft:true,at:"Udkast",text:sel==="C-1041"?"Hej Sofie, tak for at du delte det med søvnen. Jeg foreslår, at vi bytter dagens aktivitetsplan ud med en kort søvnøvelse. Du bestemmer, og Mette følger med. Skal jeg lægge den ind?":"Tre dage lyder som et vigtigt skridt. Vil du sætte ord på, hvad der gjorde det muligt?"}:null;
   return topbar("Beskeder","Tråde med menneskelig støtte · AI-udkast vises som udkast og sendes aldrig uden dig")+`<div class="card"><div class="threads"><div class="tlist">${threads.map(t=>{const q=P(t.person);return `<div class="ti ${t.id===sel?"sel":""}" data-thread="${t.id}">${av(q)}<div><div class="n">${esc(q.name)}</div><div class="p">${t.id} · ${SYM.levelLabel[t.level]||SYM.stateLabel[t.state]}${state.drafts[t.id]?" · 1 udkast":""}</div></div></div>`;}).join("")}</div>
   <div><div class="hd" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sym-border)"><div class="who">${av(p)}<div><div class="b">${esc(p.name)}</div><div class="sub">${c.id} · ${levelInd(c.level)}</div></div></div><div style="margin-left:auto"><a class="btn outline sm" href="#/case/${c.id}">Åbn forløb</a></div></div>
-  <div class="msgs">${msgs.map(m=>msgHtml(m)).join("")}${draft?msgHtml(draft):""}</div></div></div></div>`;
+  <div class="msgs">${msgs.map((m,i)=>msgHtml(m,i)).join("")}${draft?msgHtml(draft):""}</div></div></div></div>${sheetHtml()}`;
 }
-function msgHtml(m){const g=m.who==="person"?`<span class="av sm">${ini(P(C(state.selThread).person).name)}</span>`:m.who==="clinician"?`<span class="av sm">MK</span>`:`<span class="hex sm"><span>AI</span></span>`;const wl=m.who==="person"?"Person":m.who==="clinician"?"Mette Kjær · terapeut":m.draft?"Assistent · udkast til dig":"Assistent";
-  return `<div class="msg ${m.who} ${m.draft?"draft":""}">${g}<div><div class="wh">${wl} · ${m.at}</div><div class="bub">${esc(m.text)}${m.draft?`<div class="acts"><button class="btn primary sm" data-send="1">Send som Mette</button><button class="btn outline sm" data-edit="1">Ret</button><button class="btn ghost sm" data-discard="1">Kassér</button></div>`:""}</div></div></div>`;}
-function railMessages(){const c=C(state.selThread),p=P(c.person);return railHead("Tråd-workspace")+`<div class="selcard"><div class="who">${av(p)}<div><div class="b" style="font-size:13.5px">${esc(p.name)}</div><div class="sub">${c.id}</div></div></div></div><div class="sec"><span class="label">Hvem taler</span><div class="who" style="font-size:12.5px">${av(p)}<span>Cirkel = menneske</span></div><div class="who" style="font-size:12.5px">${hex("AI")}<span>Sekskant = assistent</span></div></div><div class="sec"><span class="label">Signaler i tråden</span><div class="kv"><span>Søvn nævnt</span><b>2 gange</b></div><div class="kv"><span>Tone</span><b>Opgivende</b></div><div class="kv"><span>Svartid (dig)</span><b>1t 25m</b></div></div><div class="sec"><span class="label">Skriv selv</span><textarea placeholder="Skriv til ${esc(p.name.split(" ")[0])}…"></textarea><button class="btn primary" data-toast="Sendt til ${esc(p.name)}">Send</button></div>`;}
+function msgHtml(m,i){const g=m.who==="person"?`<span class="av sm">${ini(P(C(state.selThread).person).name)}</span>`:m.who==="clinician"?`<span class="av sm">MK</span>`:`<span class="hex sm"><span>AI</span></span>`;const wl=m.who==="person"?"Person":m.who==="clinician"?"Mette Kjær · terapeut":m.draft?"Assistent · udkast til dig":"Assistent";
+  const fx=i!=null&&state.msgFocus!=null&&i===state.msgFocus;return `<div class="msg ${m.who} ${m.draft?"draft":""} ${fx?"focus":""}" ${i!=null?`id="msg-${i}"`:""}>${g}<div><div class="wh">${wl} · ${m.at}</div><div class="bub">${esc(m.text)}${m.draft?`<div class="acts"><button class="btn primary sm" data-send="1">Send som Mette</button><button class="btn outline sm" data-edit="1">Ret</button><button class="btn ghost sm" data-discard="1">Kassér</button></div>`:""}</div></div></div>`;}
+function railMessages(){const c=C(state.selThread),p=P(c.person);return railHead("Tråd-workspace")+`<div class="selcard"><div class="who">${av(p)}<div><div class="b" style="font-size:13.5px">${esc(p.name)}</div><div class="sub">${c.id}</div></div></div></div><div class="sec"><span class="label">Hvem taler</span><div class="who" style="font-size:12.5px">${av(p)}<span>Cirkel = menneske</span></div><div class="who" style="font-size:12.5px">${hex("AI")}<span>Sekskant = assistent</span></div></div><div class="sec"><span class="label">Signaler i tråden</span>${state.msgFocus!=null?`<div class="sub" style="margin-bottom:6px">Åbnet fra Samtalegrundlag · besked markeret</div>`:""}<div class="kv"><span>Søvn nævnt</span><b>2 gange</b></div><div class="kv"><span>Tone</span><b>Opgivende</b></div><div class="kv"><span>Svartid (dig)</span><b>1t 25m</b></div></div><div class="sec"><span class="label">Skriv selv</span><textarea placeholder="Skriv til ${esc(p.name.split(" ")[0])}…"></textarea><button class="btn primary" data-toast="Sendt til ${esc(p.name)}">Send</button></div>`;}
 
 function vSchedule(){
   const days=[["Man","15"],["Tir","16"],["Ons","17"],["Tor","18"],["Fre","19"]];
@@ -496,6 +542,11 @@ function vModels(){return topbar("Modeller","Hvilken version tjener triage og pe
 <div class="card"><div class="hd"><h3>Personalisering</h3></div><div class="bd"><div class="versions"><div class="ver live"><span class="chip success">Live</span><div><div class="b">rules v0.1</div><div class="sub">cut-offs + præference-svar</div><span class="code">enig 71 %</span></div><button class="btn outline sm" data-toast="Åbner evaluering">Eval</button></div><div class="ver"><span class="chip neutral">Kandidat</span><div><div class="b">llm v0.2</div><div class="sub">foreslår indhold + niveau · iteration 11</div><span class="code">under test</span></div><button class="btn outline sm" data-toast="Kræver protokol v4">Canary</button></div></div></div></div></div>
 <div class="card"><div class="hd"><h3>Enighed mellem AI-forslag og klinisk signatur · 8 uger</h3></div><div class="bd">${lineChart([{v:[71,74,78,80,82,83,84,84],color:"var(--sym-primary)",area:true}],["U31","U32","U33","U34","U35","U36","U37","U38"],{w:820,min:60,max:100,h:160})}</div></div>`;}
 const AUDIT=[["18.09 08:12","Mette Kjær","behandler","Læste rå PHQ-9","C-1041","reveal"],["18.09 07:42","system","hard-stop-detektor","Oprettede hard stop D-311","C-1030","decision"],["18.09 06:10","triage v0.3","assistent","Skrev forslag D-305","C-1042","decision"],["17.09 21:03","rules v0.1","assistent","Skrev forslag D-307","C-1044","decision"],["17.09 14:20","Jonas Winther","behandler","Åbnede tråd","C-1039","read"],["17.09 09:01","Nina Skov","kunde","Læste udfald (aggregat)","—","aggregate"],["16.09 16:44","Sofie Andersen","person","Eksporterede egne data","C-1041","export"]];
+function vKnowledge(){const k=K;return topbar("Vidensbase","Embeddede korpora bag samtalegrundlag og assistentens hukommelse · ingen data forlader VM'en")+`<div class="corpora">${k.corpora.map(c=>`<div class="card corp"><div class="n">${esc(c.name)}</div><div class="c">${esc(c.count)}</div><div class="m">${esc(c.meta)}</div><div class="sc"><span class="chip ${c.tone}">${esc(c.status)}</span> <span class="chip neutral nodot">${esc(c.scope)}</span></div></div>`).join("")}</div>
+<div class="card"><div class="hd"><h3>Seneste ingest-jobs</h3><div class="r"><button class="btn outline sm" data-toast="Upload (prototype) · dokumentet embeddes og afventer godkendelse">Upload dokument</button></div></div><table><thead><tr><th>Dokument</th><th>Korpus</th><th>Chunks</th><th>Embedder</th><th>Status</th><th>Tid</th></tr></thead><tbody>${k.ingest.map(j=>`<tr><td class="b">${esc(j.doc)}</td><td class="muted">${esc(j.corpus)}</td><td>${j.chunks}</td><td class="code nowrap">${esc(j.ver)}</td><td><span class="chip ${j.status==="Indekseret"?"success":"warning"}">${esc(j.status)}</span></td><td class="muted">${j.at}</td></tr>`).join("")}</tbody></table></div>
+<div class="grid2"><div class="card"><div class="hd"><h3>Drift</h3></div><div class="bd"><div class="kv"><span>Embedder</span><span class="code">${esc(k.embedder)}</span></div><div class="kv"><span>Kører på</span><b>Egen server · G9</b></div><div class="kv"><span>Data forlader VM'en</span><b>Nej</b></div><div class="kv"><span>Vektorlager</span><span class="code">pgvector</span></div><div class="kv"><span>Reindeksering</span><b>Ved ny embedder-version</b></div></div></div>
+<div class="card"><div class="hd"><h3>Adgangsregel og brug</h3></div><div class="bd"><div class="label">Adgangsregel</div><div class="notice" style="margin-top:8px">Transskript-embeddings er scoped til sagen. En forespørgsel fra en sag kan aldrig ramme en anden sags transskripter. Klinisk reference og SOP er fælles og indeholder ingen persondata.</div>
+<div class="label" style="margin-top:16px">Hvad grundlaget bruges til</div><div class="p" style="margin-top:6px;font-size:12.5px">Samtalegrundlag pr. sag (resumé, temaer, kilder), behandlerens spørgsmål i sags-workspace, og assistentens hukommelse på tværs af uger inden for samme sag.</div></div></div></div>`;}
 function vAudit(){const q=state.audq.toLowerCase();const rows=AUDIT.filter(r=>!q||r.join(" ").toLowerCase().includes(q));return topbar("Audit","Hver læsning af persondata og hver beslutningspost",`<input class="searchbox" id="audq" placeholder="Søg aktør, forløb, handling…" value="${esc(state.audq)}">`)+`<div class="card"><table><thead><tr><th>Tid</th><th>Aktør</th><th>Type</th><th>Handling</th><th>Forløb</th><th>Kategori</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="muted">${r[0]}</td><td class="b">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="code">${r[4]}</td><td><span class="chip ${r[5]==="reveal"?"warning":r[5]==="decision"?"primary":"neutral"} nodot">${r[5]}</span></td></tr>`).join("")||`<tr><td colspan="6" class="muted">Ingen hændelser matcher.</td></tr>`}</tbody></table></div>`;}
 function vData(){return topbar("Data","Samtykke, opbevaring og anmodninger")+`<div class="grid2"><div class="card"><div class="hd"><h3>Samtykkeskabeloner</h3></div><table><tbody>${[["Person · forløb","v2 · 2026-08-15","Aktiv"],["Person · pulse-tjek","v1 · 2026-06-01","Aktiv"],["Arbejdsplads · databehandler","v1 · 2026-06-01","Aktiv"],["Pensionskasse · aggregat","v1 · 2026-06-01","Aktiv"]].map(r=>`<tr><td class="b">${r[0]}</td><td class="muted">${r[1]}</td><td><span class="chip success">${r[2]}</span></td></tr>`).join("")}</tbody></table></div><div class="card"><div class="hd"><h3>Opbevaring</h3></div><div class="bd"><div class="kv"><span>Pulse-svar (individ)</span><b>12 mdr.</b></div><div class="kv"><span>Forløbsdata</span><b>5 år efter afslutning</b></div><div class="kv"><span>Beskeder</span><b>Som forløbsdata</b></div><div class="kv"><span>Audit</span><b>10 år</b></div></div></div></div><div class="card"><div class="hd"><h3>Anmodninger</h3></div><table><thead><tr><th>Dato</th><th>Person</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody><tr><td>16.09.2026</td><td class="code">p1</td><td>Eksport</td><td><span class="chip success">Leveret</span></td><td></td></tr><tr><td>12.09.2026</td><td class="code">p9</td><td>Sletning</td><td><span class="chip warning">Afventer · 30 dage</span></td><td><button class="btn outline sm" data-toast="Sletning planlagt til 12.10.2026">Godkend</button></td></tr></tbody></table></div>`;}
 
@@ -503,24 +554,30 @@ function vData(){return topbar("Data","Samtykke, opbevaring og anmodninger")+`<d
 const VIEWS={conference:[vConference,railConference],caseload:[vCaseload,railCaseload],case:[vCase,railCase],messages:[vMessages,railMessages],schedule:[vSchedule,railSchedule],protocol:[vProtocol,railProtocol],
   pulse:[vPulse,railFirma],signals:[vSignals,railFirma],refer:[vRefer,railFirma],campaigns:[vCampaigns,railFirma],reports:[vReports,railFirma],
   referrals:[vReferrals,railKunde],population:[vPopulation,railKunde],outcomes:[vOutcomes,railKunde],value:[vValue,railKunde],contracts:[vContracts,railKunde],
-  tenants:[vTenants,railAdmin],people:[vPeople,railAdmin],"protocol-edit":[vProtocolEdit,railAdmin],instruments:[vInstruments,railAdmin],models:[vModels,railAdmin],audit:[vAudit,railAdmin],data:[vData,railAdmin]};
+  tenants:[vTenants,railAdmin],people:[vPeople,railAdmin],"protocol-edit":[vProtocolEdit,railAdmin],instruments:[vInstruments,railAdmin],models:[vModels,railAdmin],knowledge:[vKnowledge,railAdmin],audit:[vAudit,railAdmin],data:[vData,railAdmin]};
 function render(){
   let h=location.hash||"#/conference";if(!h.startsWith("#/"))h="#/conference";
-  const [path,qs]=h.slice(2).split("?");const [key,arg]=path.split("/");if(qs){const m=qs.match(/sel=([^&]+)/);if(m)state.selDecision=m[1];}
+  const [path,qs]=h.slice(2).split("?");const [key,arg]=path.split("/");if(qs){const m=qs.match(/sel=([^&]+)/);if(m)state.selDecision=m[1];const a=qs.match(/ask=([^&]+)/);if(a){state.askq=decodeURIComponent(a[1]);state.ask=answerFor(state.askq);}const ci=qs.match(/cite=([^&]+)/);if(ci)state.sheet=ci[1];const fo=qs.match(/focus=(\d+)/);if(fo){state.msgFocus=+fo[1];}}
   const v=VIEWS[key]||VIEWS.conference;
   const role=ROUTE_ROLE[key]||"behandler";if(role!==state.role)state.role=role;
   renderNav();
   $("#main").innerHTML=v[0](arg);$("#rail").innerHTML=v[1](arg);
   $("#main").scrollTop=0;
+  if(key==="messages"&&state.msgFocus!=null){const el=$("#msg-"+state.msgFocus);if(el)el.scrollIntoView({block:"center"});}
+  const aq=$("#askq");if(aq&&state.askFocus){aq.focus();state.askFocus=false;}
 }
-window.addEventListener("hashchange",render);
+window.addEventListener("hashchange",()=>{if(!location.hash.startsWith("#/messages"))state.msgFocus=null;render();});
 $("#role").addEventListener("change",e=>{state.role=e.target.value;location.hash="#/"+NAV[state.role][0][0];});
 
 /* delegated clicks */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-d],[data-f],[data-batch],[data-v],#sign,[data-href],#raw,[data-thread],[data-send],[data-edit],[data-discard],[data-sess],[data-mod],[data-toast],#refCreate,#refReset,#campToggle,[data-tenant],[data-sel]");
+  const t=e.target.closest("[data-d],[data-f],[data-batch],[data-v],#sign,[data-href],#raw,[data-thread],[data-send],[data-edit],[data-discard],[data-sess],[data-mod],[data-toast],#refCreate,#refReset,#campToggle,[data-tenant],[data-sel],[data-cite],[data-ask],#askSend,#sheetClose,#sheetwrap");
   if(!t)return;
   if(t.dataset.toast){toast(t.dataset.toast);return;}
+  if(t.dataset.cite){const c=K.cites[t.dataset.cite];if(c.kind==="chat"){state.selThread=c.case;state.msgFocus=c.idx;state.sheet=null;if(location.hash.startsWith("#/messages"))render();else location.hash="#/messages";}else{state.sheet=t.dataset.cite;render();}return;}
+  if(t.id==="sheetClose"||(t.id==="sheetwrap"&&e.target.id==="sheetwrap")){state.sheet=null;render();return;}
+  if(t.dataset.ask){state.askq=t.dataset.ask;state.ask=answerFor(t.dataset.ask);render();return;}
+  if(t.id==="askSend"){const q=($("#askq")||{}).value||"";if(!q.trim()){toast("Skriv et spørgsmål");return;}state.askq=q;state.ask=answerFor(q);render();return;}
   if(t.dataset.sel){state.selDecision=t.dataset.sel;}
   if(t.dataset.d){state.selDecision=t.dataset.d;render();return;}
   if(t.dataset.f){state.filter=t.dataset.f;render();return;}
@@ -540,6 +597,8 @@ document.addEventListener("click",e=>{
   if(t.id==="campToggle"){state.campOn=!state.campOn;toast(state.campOn?"Kampagne aktiv":"Kampagne pauset");render();return;}
   if(t.dataset.tenant){state.selTenant=t.dataset.tenant;render();return;}
 });
+document.addEventListener("keydown",e=>{if(e.target.id==="askq"&&e.key==="Enter"){e.preventDefault();$("#askSend").click();}if(e.key==="Escape"&&state.sheet){state.sheet=null;render();}});
+document.addEventListener("input",e=>{if(e.target.id==="askq")state.askq=e.target.value;});
 document.addEventListener("change",e=>{if(e.target.id==="screens"&&e.target.value){location.hash=e.target.value;}});
 document.addEventListener("input",e=>{if(e.target.id==="audq"){state.audq=e.target.value;const pos=e.target.selectionStart;render();const n=$("#audq");n.focus();n.setSelectionRange(pos,pos);}if(e.target.id==="reason"){state.reason[state.selDecision]=e.target.value;}});
 render();

@@ -83,3 +83,45 @@ SYM.instruments = {
   phq9: ["Lidt interesse eller glæde ved at gøre ting","Nedtrykt, deprimeret eller håbløs","Svært ved at falde i søvn eller sove igennem, eller sovet for meget","Træt eller uden energi","Dårlig appetit eller overspisning","Dårlige tanker om dig selv","Svært ved at koncentrere dig","Bevæget dig eller talt så langsomt at andre bemærkede det, eller det modsatte","Tanker om at du hellere ville være død eller om at gøre dig selv fortræd"],
 };
 SYM.kundeOutcomes = { referred: 63, inCare: 27, stabilised: 21, escalated: 4, medianDaysToStable: 71, rtwRate: 0.78, prevalence: 0.11 };
+// ---- Graf: knowledge + memory layer (vector-embedded corpora; transcripts scoped per case) ----
+SYM.knowledge = {
+  summaryByCase: {
+    "C-1041": {
+      title: "Hvad Sofie og assistenten har talt om, uge 34–38",
+      text: "Samtalerne har handlet mest om søvn og om at få en arbejdsuge til at hænge sammen. Sofie har to gange beskrevet nætter næsten uden søvn, senest natten til søndag i uge 38, og assistenten har foreslået at bytte aktivitetsplanen ud med en kort søvnøvelse. Én gang (18.09) udtrykte hun håbløshed, hvilket udløste et hard stop til dig. Grænser på arbejdet er kommet op i tre samtaler, typisk i forbindelse med overarbejde i Drift.",
+      themes: [ { t: "Søvn", n: 6 }, { t: "Arbejdsplan", n: 4 }, { t: "Håbløshed", n: 1, tone: "danger" }, { t: "Grænser på arbejdet", n: 3 } ],
+      citations: ["chat-3", "chat-4", "sop-sleep-3", "prot-ba"],
+    },
+  },
+  // citations: chat-N points at SYM.thread index N; sop/prot point at excerpts below
+  cites: {
+    "chat-1": { kind: "chat", case: "C-1041", idx: 1, label: "Chat 15.09 08:15" },
+    "chat-3": { kind: "chat", case: "C-1041", idx: 3, label: "Chat 15.09 08:17" },
+    "chat-4": { kind: "chat", case: "C-1041", idx: 4, label: "Chat 15.09 08:17 (assistent)" },
+    "chat-5": { kind: "chat", case: "C-1041", idx: 5, label: "Chat 15.09 09:40 (Mette)" },
+    "sop-sleep-3": { kind: "sop", label: "SOP: Søvnmodul §3", source: "Encounter SOP · Søvnmodul v2 · §3 Erstatning af øvelse", excerpt: "Når en person rapporterer markant søvnmangel (under 4 timer to nætter i træk, eller subjektivt 'næsten ikke sovet'), kan assistenten foreslå at erstatte dagens planlagte øvelse med en kort søvnhygiejne-øvelse (max 6 min). Forslaget skal fremgå for behandler i tråden. Assistenten må ikke ændre planens niveau." },
+    "sop-hardstop": { kind: "sop", label: "SOP: Hard stop §1", source: "Encounter SOP · Sikkerhed v3 · §1 Udtryk for håbløshed eller selvskade", excerpt: "Udtryk for håbløshed, ønske om at være død eller selvskade i chat udløser et hard stop uden AI-vurdering. Behandler kontakter personen samme dag. Assistenten svarer med den faste sikkerhedstekst og henviser til Akut hjælp." },
+    "prot-ba": { kind: "sop", label: "Protokol: Adfærdsaktivering", source: "Klinisk protokol v3 · Modul 2 Adfærdsaktivering", excerpt: "Adfærdsaktivering indledes med en ugentlig aktivitetsplan med 3–5 aktiviteter, der balancerer pligt og glæde. Ved gentagne oversprungne aktiviteter (≥ 3 på en uge) skal assistenten opsummere til behandler og må ikke øge antallet af aktiviteter." },
+    "ref-phq9": { kind: "sop", label: "Reference: PHQ-9 item 9", source: "Klinisk reference · PHQ-9 scoringsvejledning (DK)", excerpt: "Item 9 (tanker om at være død eller om at gøre sig selv fortræd) scores 0–3. Enhver score ≥ 1 skal følges op klinisk uanset totalscore." },
+  },
+  answers: [
+    { match: /sidste uge|7 dage|talte i/i, text: "I sidste uge talte Sofie og assistenten primært om søvn. Hun beskrev en nat næsten uden søvn natten til søndag, og assistenten foreslog at bytte aktivitetsplanen ud med en kort søvnøvelse. Du svarede mandag kl. 09:40, at I tager det op onsdag. Ingen nye udtryk for håbløshed siden hard stoppet 18.09.", cites: ["chat-3", "chat-4", "chat-5"] },
+    { match: /søvn|sleep/i, text: "Protokollen tillader, at assistenten erstatter dagens øvelse med en kort søvnhygiejne-øvelse ved markant søvnmangel, men ikke at niveauet ændres. Sofies søvnproblem er nævnt 6 gange i tråden, senest 15.09. Søvnmodulet er introduceret, men faste sengetider er endnu ikke gennemført.", cites: ["sop-sleep-3", "chat-3"] },
+    { match: /håbløs|hard stop|selvskade/i, text: "Der er ét udtryk for håbløshed i tråden (18.09 kl. 07:41), som udløste hard stop D-311 uden AI-vurdering. Ifølge SOP skal du kontakte Sofie samme dag. PHQ-9 item 9 var 2 ved seneste screening.", cites: ["sop-hardstop", "ref-phq9"] },
+    { match: /.*/, text: "Sofie er i guidet forløb siden 28.08 med adfærdsaktivering og søvn. De seneste 7 dage er 3 af 4 øvelser sprunget over, og arbejdsevnen er faldet fra 5 til 4. Assistenten har foreslået en søvnøvelse i stedet for aktivitetsplanen. Der er et åbent niveauskift (D-308) til dig.", cites: ["chat-4", "prot-ba"] },
+  ],
+  corpora: [
+    { id: "clin", name: "Klinisk reference", count: "1 240 afsnit", meta: "Opdateret 12.09 · Kilde: NKR/Sundhedsstyrelsen + protokol", status: "Indekseret", tone: "success", scope: "Fælles for alle sager" },
+    { id: "sop", name: "Encounter SOP", count: "86 dokumenter", meta: "2 afventer godkendelse hos Kim Mathiasen", status: "2 afventer", tone: "warning", scope: "Fælles for alle sager" },
+    { id: "tx", name: "Sagstransskripter", count: "8 sager", meta: "Embeddes løbende · kun tilgængelig inden for sagen", status: "Løbende", tone: "primary", scope: "Pr. sag · aldrig på tværs" },
+  ],
+  embedder: "bge-m3 · self-hosted",
+  ingest: [
+    { doc: "Søvnmodul v2 (SOP)", corpus: "Encounter SOP", chunks: 41, ver: "bge-m3 self-hosted", status: "Indekseret", at: "18.09 06:02" },
+    { doc: "C-1041 · tråd uge 38", corpus: "Sagstransskripter", chunks: 12, ver: "bge-m3 self-hosted", status: "Indekseret", at: "18.09 05:40" },
+    { doc: "Sikkerhed v3 (SOP)", corpus: "Encounter SOP", chunks: 18, ver: "bge-m3 self-hosted", status: "Afventer godkendelse", at: "17.09 14:10" },
+    { doc: "NKR Depression 2025 (uddrag)", corpus: "Klinisk reference", chunks: 310, ver: "bge-m3 self-hosted", status: "Indekseret", at: "12.09 09:15" },
+    { doc: "Tilbagefaldsforebyggelse (SOP)", corpus: "Encounter SOP", chunks: 27, ver: "bge-m3 self-hosted", status: "Afventer godkendelse", at: "11.09 16:48" },
+    { doc: "C-1039 · tråd uge 37", corpus: "Sagstransskripter", chunks: 9, ver: "bge-m3 self-hosted", status: "Indekseret", at: "11.09 05:41" },
+  ],
+};
