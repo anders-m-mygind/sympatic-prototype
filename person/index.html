@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="da" data-temp="person">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sympatik · person-app prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+/* ---------- stage (outside the phone) ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--sym-font);
+  background: #E9ECEA;
+  color: var(--sym-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.stage {
+  display: flex; align-items: flex-start; justify-content: center; gap: 32px;
+  padding: 40px 24px; min-height: 100vh;
+}
+.aside { width: 250px; font-size: 13px; line-height: 19px; color: var(--sym-text-2); }
+.aside h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; color: var(--sym-text); }
+.aside .box { background: var(--sym-surface); border: 1px solid var(--sym-border); border-radius: var(--sym-r-md); padding: 14px; margin-bottom: 16px; box-shadow: var(--sym-shadow-card); }
+.aside label { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+.aside input[type=radio] { accent-color: var(--sym-primary); margin: 0; }
+.aside a { display: block; color: var(--sym-primary); text-decoration: none; padding: 4px 0; }
+.aside a:hover { text-decoration: underline; }
+.aside .hint { color: var(--sym-text-3); font-size: 12px; margin-top: 6px; }
+
+/* ---------- phone ---------- */
+.phone {
+  flex: none; width: 430px; height: 884px; border-radius: 62px;
+  background: #101312; padding: 20px; position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,.35), inset 0 0 0 2px #2a2f2d;
+}
+.phone::before { /* side button hint */
+  content: ""; position: absolute; right: -3px; top: 200px; width: 3px; height: 90px; background: #2a2f2d; border-radius: 2px;
+}
+.screen {
+  width: 390px; height: 844px; border-radius: 44px; overflow: hidden; background: var(--sym-page);
+  position: relative; display: flex; flex-direction: column;
+}
+body.noframe .stage { padding: 0; display: block; min-height: 0; }
+body.noframe .aside { display: none; }
+body.noframe .phone { width: 100%; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; background: none; }
+body.noframe .phone::before { display: none; }
+body.noframe .screen { width: 100%; height: 100%; border-radius: 0; }
+body.noframe .statusbar { display: none; }
+body.noframe .island { display: none; }
+
+.statusbar {
+  height: 54px; flex: none; display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 32px 6px; font-size: 15px; font-weight: 600; color: var(--sym-text);
+}
+.statusbar svg { display: block; }
+.island { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 122px; height: 36px; background: #000; border-radius: 20px; z-index: 5; }
+.homebar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: var(--sym-text); opacity: .85; z-index: 5; }
+
+/* ---------- app chrome ---------- */
+.topbar { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 4px; min-height: 48px; }
+.topbar .back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 6px 0 0; color: var(--sym-primary); font-size: var(--sym-fs-body); font-weight: 500; background: none; border: 0; cursor: pointer; font-family: inherit; }
+.topbar .title { font-size: var(--sym-fs-small); color: var(--sym-text-3); font-weight: 500; }
+.safety {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px;
+  border-radius: var(--sym-r-pill); border: 1.5px solid var(--sym-danger); color: var(--sym-danger);
+  background: var(--sym-surface); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.safety:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--sym-info); outline-offset: 2px; }
+
+.content { flex: 1; overflow-y: auto; padding: 8px 20px 24px; scrollbar-width: none; }
+.content::-webkit-scrollbar { display: none; }
+.content.flush { padding-bottom: 0; }
+
+.tabs {
+  flex: none; display: grid; grid-template-columns: repeat(4, 1fr); height: 84px;
+  padding: 8px 8px 26px; background: var(--sym-surface); border-top: 1px solid var(--sym-border);
+}
+.tabs a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 44px; text-decoration: none; color: var(--sym-text-3); font-size: 11.5px; font-weight: 500; border-radius: var(--sym-r-sm);
+}
+.tabs a.on { color: var(--sym-primary); font-weight: 600; }
+.tabs svg { width: 24px; height: 24px; }
+
+/* ---------- type ---------- */
+h1 { font-size: var(--sym-fs-h1); line-height: var(--sym-lh-h1); font-weight: 700; margin: 12px 0 8px; letter-spacing: -.01em; }
+h2 { font-size: var(--sym-fs-h2); line-height: var(--sym-lh-h2); font-weight: 600; margin: 20px 0 8px; }
+h3 { font-size: var(--sym-fs-h3); line-height: var(--sym-lh-h3); font-weight: 600; margin: 0 0 4px; }
+p { font-size: var(--sym-fs-body); line-height: var(--sym-lh-body); margin: 0 0 12px; color: var(--sym-text-2); }
+p.lead { color: var(--sym-text); }
+.small { font-size: var(--sym-fs-small); line-height: var(--sym-lh-small); color: var(--sym-text-3); }
+.micro { font-size: var(--sym-fs-micro); line-height: var(--sym-lh-micro); color: var(--sym-text-3); }
+
+/* ---------- controls ---------- */
+.btn {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; padding: 0 20px;
+  border-radius: var(--sym-r-md); border: 0; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;
+  background: var(--sym-primary); color: #fff;
+}
+.btn:hover { background: var(--sym-primary-hover); }
+.btn.secondary { background: var(--sym-surface); color: var(--sym-primary); border: 1.5px solid var(--sym-border-strong); }
+.btn.quiet { background: transparent; color: var(--sym-text-2); font-weight: 500; }
+.btn.danger { background: var(--sym-danger); }
+.btn.danger-outline { background: var(--sym-surface); color: var(--sym-danger); border: 1.5px solid var(--sym-danger); }
+.btn + .btn { margin-top: 10px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.linkbtn { background: none; border: 0; font: inherit; font-size: var(--sym-fs-body); color: var(--sym-primary); font-weight: 500; min-height: 44px; padding: 0; cursor: pointer; }
+
+.card { background: var(--sym-surface); border: 1px solid var(--sym-border); border-radius: var(--sym-r-lg); padding: 18px; box-shadow: var(--sym-shadow-card); }
+.card + .card { margin-top: 12px; }
+.row { display: flex; align-items: center; gap: 12px; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+
+/* list rows (tappable) */
+.list { border: 1px solid var(--sym-border); border-radius: var(--sym-r-lg); background: var(--sym-surface); overflow: hidden; }
+.list a, .list button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 10px 16px; text-decoration: none; color: var(--sym-text); background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.list > * + * { border-top: 1px solid var(--sym-border); }
+.list .grow { flex: 1; min-width: 0; }
+.list .chev { color: var(--sym-text-3); flex: none; }
+.list .t { font-size: var(--sym-fs-body); font-weight: 500; line-height: 22px; }
+.list .s { font-size: var(--sym-fs-small); color: var(--sym-text-3); line-height: 18px; }
+
+/* glyphs */
+.circle { width: 36px; height: 36px; border-radius: 50%; background: var(--sym-primary-soft); color: var(--sym-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: none; }
+.hex { width: 34px; height: 37px; background: var(--sym-primary); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: inline-flex; align-items: center; justify-content: center; flex: none; position: relative; }
+.hex::after { content: ""; position: absolute; inset: 1.5px; background: var(--sym-surface); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.hex span { position: relative; z-index: 1; color: var(--sym-primary); font-size: 12px; font-weight: 700; }
+.hex.sm { width: 26px; height: 28px; } .hex.sm span { font-size: 10px; }
+.circle.sm { width: 26px; height: 26px; font-size: 10.5px; }
+.circle.you { background: var(--sym-surface-sunken); color: var(--sym-text-2); }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--sym-r-pill); font-size: 12.5px; font-weight: 600; background: var(--sym-primary-soft); color: var(--sym-primary); }
+.chip.neutral { background: var(--sym-surface-sunken); color: var(--sym-text-2); }
+.chip.success { background: var(--sym-success-soft); color: #0F7A38; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* ---------- TODAY card (the memorable thing; only place --sym-warm lives) ---------- */
+.today {
+  border-radius: 22px; padding: 22px 20px 20px; background: var(--sym-surface);
+  border: 1px solid var(--sym-border); box-shadow: var(--sym-shadow-rail); position: relative; overflow: hidden;
+}
+.today .band { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--sym-warm); }
+.today .kicker { font-size: var(--sym-fs-small); color: var(--sym-text-3); font-weight: 500; margin-bottom: 6px; }
+.today h1 { margin: 0 0 8px; font-size: 24px; line-height: 30px; }
+.today p { margin-bottom: 16px; }
+.today .warmbox { background: var(--sym-warm-soft); border-radius: var(--sym-r-md); padding: 14px 16px; margin-bottom: 16px; }
+.today .warmbox .t { font-weight: 600; color: var(--sym-text); font-size: var(--sym-fs-body); }
+.today .warmbox .s { color: var(--sym-text-2); font-size: var(--sym-fs-small); margin-top: 2px; }
+.progressbar { height: 8px; border-radius: 4px; background: var(--sym-warm-soft); overflow: hidden; }
+.progressbar i { display: block; height: 100%; background: var(--sym-warm); border-radius: 4px; }
+.today .sub { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+.today .msgline { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: var(--sym-r-md); background: var(--sym-surface-sunken); margin-bottom: 14px; text-decoration: none; color: inherit; }
+.today .msgline .who { font-size: var(--sym-fs-micro); color: var(--sym-text-3); font-weight: 600; }
+.today .msgline .tx { font-size: var(--sym-fs-small); line-height: 20px; color: var(--sym-text); }
+.greeting { padding: 8px 0 4px; }
+.greeting .day { font-size: var(--sym-fs-small); color: var(--sym-text-3); font-weight: 500; }
+.greeting .hi { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.quiet-section { margin-top: 20px; }
+
+/* ---------- pulse / screening ---------- */
+.dots { display: flex; gap: 6px; margin: 4px 0 20px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--sym-border-strong); }
+.dots i.on { background: var(--sym-primary); }
+.dots i.done { background: var(--sym-primary); opacity: .45; }
+.scale { display: grid; gap: 10px; margin-top: 20px; }
+.scale button {
+  min-height: 56px; border-radius: var(--sym-r-md); border: 1.5px solid var(--sym-border-strong); background: var(--sym-surface);
+  font: inherit; font-size: 17px; font-weight: 500; color: var(--sym-text); cursor: pointer; text-align: left; padding: 0 18px;
+}
+.scale button:hover { border-color: var(--sym-primary); }
+.scale button.picked { border-color: var(--sym-primary); background: var(--sym-primary-soft); color: var(--sym-primary); font-weight: 600; }
+.scale.numeric { grid-template-columns: repeat(4, 1fr); }
+.scale.numeric button { text-align: center; padding: 0; font-size: 18px; min-height: 52px; }
+.scale.numeric button:first-child { grid-column: span 1; }
+.scale-ends { display: flex; justify-content: space-between; font-size: var(--sym-fs-micro); color: var(--sym-text-3); margin-top: 6px; }
+.q { font-size: 22px; line-height: 30px; font-weight: 600; margin: 8px 0 4px; letter-spacing: -.01em; }
+
+/* conversation (screening + chat) */
+.thread { display: flex; flex-direction: column; gap: 14px; padding-bottom: 8px; }
+.msg { display: flex; gap: 10px; align-items: flex-end; max-width: 88%; }
+.msg.me { align-self: flex-end; flex-direction: row-reverse; }
+.msg .bubble { border-radius: 18px; padding: 10px 14px; font-size: var(--sym-fs-body); line-height: 23px; background: var(--sym-surface); border: 1px solid var(--sym-border); color: var(--sym-text); }
+.msg.me .bubble { background: var(--sym-primary); color: #fff; border-color: var(--sym-primary); }
+.msg.clin .bubble { background: var(--sym-primary-soft); border-color: var(--sym-primary-soft); }
+.msg .who { font-size: var(--sym-fs-micro); color: var(--sym-text-3); font-weight: 600; margin: 0 0 4px 4px; }
+.msg.me .who { text-align: right; margin: 0 4px 4px 0; }
+.msg .col { display: flex; flex-direction: column; min-width: 0; }
+.sysline { text-align: center; font-size: var(--sym-fs-small); color: var(--sym-text-3); padding: 4px 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chips button { min-height: 44px; padding: 0 16px; border-radius: var(--sym-r-pill); border: 1.5px solid var(--sym-primary); background: var(--sym-surface); color: var(--sym-primary); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.chips button:hover { background: var(--sym-primary-soft); }
+.composer { flex: none; display: flex; gap: 8px; align-items: center; padding: 10px 16px 12px; border-top: 1px solid var(--sym-border); background: var(--sym-surface); }
+.composer input { flex: 1; min-height: 44px; border-radius: var(--sym-r-pill); border: 1.5px solid var(--sym-border-strong); padding: 0 16px; font: inherit; font-size: 16px; background: var(--sym-page); }
+.composer button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--sym-primary); color: #fff; cursor: pointer; display: grid; place-items: center; flex: none; }
+.talk-human { flex: none; padding: 8px 16px 0; background: var(--sym-surface); }
+.talk-human button { width: 100%; min-height: 44px; border-radius: var(--sym-r-md); border: 1.5px dashed var(--sym-border-strong); background: var(--sym-page); font: inherit; font-size: 15px; font-weight: 600; color: var(--sym-primary); cursor: pointer; }
+.formitem { padding: 14px 0; border-bottom: 1px solid var(--sym-border); }
+.formitem .qt { font-size: 15px; line-height: 21px; font-weight: 500; margin-bottom: 8px; }
+.formitem .opts { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.formitem .opts button { min-height: 44px; border-radius: var(--sym-r-sm); border: 1.5px solid var(--sym-border-strong); background: var(--sym-surface); font: inherit; font-size: 12px; line-height: 14px; font-weight: 500; color: var(--sym-text-2); cursor: pointer; padding: 4px; }
+.formitem .opts button.picked { border-color: var(--sym-primary); background: var(--sym-primary-soft); color: var(--sym-primary); font-weight: 600; }
+.segment { display: inline-flex; background: var(--sym-surface-sunken); border-radius: var(--sym-r-pill); padding: 3px; }
+.segment button { min-height: 38px; padding: 0 14px; border-radius: var(--sym-r-pill); border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--sym-text-2); cursor: pointer; }
+.segment button.on { background: var(--sym-surface); color: var(--sym-text); box-shadow: var(--sym-shadow-card); }
+
+/* exercise player */
+.step { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--sym-border); }
+.step .n { width: 28px; height: 28px; border-radius: 50%; background: var(--sym-primary-soft); color: var(--sym-primary); display: grid; place-items: center; font-size: 13px; font-weight: 700; flex: none; }
+.step textarea { width: 100%; min-height: 72px; border-radius: var(--sym-r-sm); border: 1.5px solid var(--sym-border-strong); padding: 10px; font: inherit; font-size: 15px; margin-top: 8px; resize: vertical; }
+
+/* progress chart */
+.chart { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 16px; font-size: var(--sym-fs-small); color: var(--sym-text-2); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* visibility list */
+.vis h3 { margin-top: 18px; }
+.vis ul { list-style: none; padding: 0; margin: 6px 0 0; }
+.vis li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; font-size: var(--sym-fs-body); line-height: 22px; color: var(--sym-text); border-bottom: 1px solid var(--sym-border); }
+.vis li svg { flex: none; margin-top: 3px; }
+.vis li.no { color: var(--sym-text-2); }
+
+/* sheet */
+.sheet-bg { position: absolute; inset: 0; background: rgba(20,33,29,.45); z-index: 20; display: none; align-items: flex-end; }
+.sheet-bg.open { display: flex; }
+.sheet { width: 100%; background: var(--sym-surface); border-radius: 22px 22px 0 0; padding: 12px 20px 40px; }
+.sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--sym-border-strong); margin: 0 auto 14px; }
+.sheet .call { display: flex; align-items: center; justify-content: space-between; min-height: 60px; padding: 8px 0; border-bottom: 1px solid var(--sym-border); text-decoration: none; color: var(--sym-text); }
+.sheet .call .num { font-weight: 700; font-size: 18px; }
+.sheet .call .lbl { font-size: var(--sym-fs-small); color: var(--sym-text-2); }
+
+.toast { position: absolute; left: 20px; right: 20px; bottom: 100px; background: var(--sym-ink-1); color: #fff; border-radius: var(--sym-r-md); padding: 12px 16px; font-size: 15px; z-index: 30; box-shadow: var(--sym-shadow-pop); display: none; }
+.toast.show { display: block; }
+.empty { text-align: center; padding: 40px 10px; }
+.empty .ic { width: 56px; height: 56px; border-radius: 50%; background: var(--sym-primary-soft); display: grid; place-items: center; margin: 0 auto 14px; color: var(--sym-primary); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .today { animation: settle .35s ease-out; }
+  @keyframes settle { from { transform: translateY(6px); opacity: .0; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="aside">
+    <div class="box">
+      <h2>Tilstand</h2>
+      <div id="stateSel"></div>
+      <div class="hint">Skifter Sofies sted i forløbet. I dag-kortet ændrer form.</div>
+    </div>
+    <div class="box">
+      <h2>Skærme</h2>
+      <div id="routeList"></div>
+      <div class="hint">Tilføj <code>?frame=0</code> for at se appen uden ramme.</div>
+    </div>
+  </div>
+
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="island"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <svg width="70" height="14" viewBox="0 0 70 14" aria-hidden="true">
+          <g fill="currentColor"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6.5" width="3" height="7.5" rx="1"/><rect x="10" y="4" width="3" height="10" rx="1"/><rect x="15" y="1.5" width="3" height="12.5" rx="1"/></g>
+          <path d="M24 5.5c3.5-3.5 9.5-3.5 13 0l-1.5 1.5c-2.7-2.7-7.3-2.7-10 0zm2.5 2.5c2.1-2.1 5.9-2.1 8 0l-1.5 1.5c-1.3-1.3-3.7-1.3-5 0zm2.5 2.5c.8-.8 2.2-.8 3 0L30.5 12z" fill="currentColor"/>
+          <rect x="44" y="1.5" width="22" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="46" y="3.5" width="16" height="7" rx="1.5" fill="currentColor"/><rect x="67" y="5" width="2" height="4" rx="1" fill="currentColor" fill-opacity=".4"/>
+        </svg>
+      </div>
+      <div class="topbar" id="topbar"></div>
+      <div class="content" id="content"></div>
+      <div id="footer"></div>
+      <nav class="tabs" id="tabs"></nav>
+      <div class="homebar"></div>
+      <div class="sheet-bg" id="sheet" onclick="if(event.target===this)closeSheet()">
+        <div class="sheet" role="dialog" aria-label="Akut hjælp">
+          <div class="grab"></div>
+          <h2 style="margin-top:0">Har du brug for hjælp nu?</h2>
+          <p>Hvis du er i fare, eller har tanker om at gøre dig selv fortræd, så ring. Det er altid det rigtige at gøre.</p>
+          <a class="call" href="tel:112"><span><span class="num">112</span><br><span class="lbl">Akut, livsfare</span></span><span class="chip neutral">Ring</span></a>
+          <a class="call" href="tel:70201201"><span><span class="num">70 201 201</span><br><span class="lbl">Livslinien, alle dage 11–05</span></span><span class="chip neutral">Ring</span></a>
+          <div style="height:16px"></div>
+          <button class="btn danger" onclick="closeSheet();toast('En behandler fra Encounter kontakter dig inden for en time.')">Kontakt en behandler nu</button>
+          <button class="btn quiet" onclick="closeSheet()">Luk</button>
+        </div>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/data.js"></script>
+<script>
+// ---------- setup ----------
+if (new URLSearchParams(location.search).get('frame') === '0') document.body.classList.add('noframe');
+const S = { state: 'in_care', level: 'guided', pulse: {}, pulseIdx: 0, scr: {}, scrIdx: 0, scrMode: 'chat', chat: [...SYM.thread], done: {}, consent: null };
+SYM.programme.forEach(e => S.done[e.id] = e.done);
+const me = SYM.persons.find(p => p.id === 'p1');
+const clin = SYM.clinicians.find(c => c.id === 'b1');
+
+const STATES = [
+  ['monitored', null, 'Monitoreret · pulstjek venter'],
+  ['referred', null, 'Henvist · samtykke'],
+  ['screening', null, 'Screening · spørgsmål mangler'],
+  ['in_care', 'guided', 'I forløb · guidet'],
+  ['in_care', 'human', 'I forløb · menneskelig støtte'],
+  ['in_care', 'blended', 'I forløb · blended care'],
+  ['post_care', null, 'Efterforløb'],
+];
+const ROUTES = [['#/today','I dag'],['#/pulse','Pulstjek'],['#/screening','Screening (samtale)'],['#/programme','Program'],['#/exercise/e1','Øvelse'],['#/chat','Chat'],['#/sessions','Videosamtaler'],['#/progress','Din udvikling'],['#/me','Mig'],['#/me/visibility','Hvad kan min arbejdsplads se?'],['#/consent','Samtykke']];
+
+document.getElementById('stateSel').innerHTML = STATES.map(([st,lv,label],i) =>
+  `<label><input type="radio" name="st" value="${i}" ${st===S.state&&lv===S.level?'checked':''}> ${label}</label>`).join('');
+document.getElementById('stateSel').addEventListener('change', e => { const [st,lv] = STATES[+e.target.value]; S.state = st; S.level = lv; location.hash = '#/today'; render(); });
+document.getElementById('routeList').innerHTML = ROUTES.map(([h,l]) => `<a href="${h}">${l}</a>`).join('');
+
+const ICONS = {
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  prog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>',
+  me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+  chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  check: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+  x: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  send: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>',
+  shield: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  video: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hexGlyph = (sm) => `<span class="hex ${sm?'sm':''}" aria-label="Assistent"><span>AI</span></span>`;
+const circle = (init, sm, you) => `<span class="circle ${sm?'sm':''} ${you?'you':''}">${init}</span>`;
+
+// ---------- chrome ----------
+function chrome(opts) {
+  const { back, title, tabs = true, footer = '' } = opts;
+  document.getElementById('topbar').innerHTML =
+    `<div>${back ? `<button class="back" onclick="location.hash='${back}'">${ICONS.back}Tilbage</button>` : `<span class="title">${esc(title||'')}</span>`}</div>
+     <button class="safety" onclick="openSheet()" aria-label="Akut hjælp">${ICONS.shield} Akut hjælp</button>`;
+  const tab = (location.hash.split('/')[1] || 'today');
+  const on = k => (k === 'today' && ['today','pulse','consent'].includes(tab)) || (k === 'programme' && ['programme','exercise','progress','sessions'].includes(tab)) || (k === 'chat' && ['chat','screening'].includes(tab)) || (k === 'me' && tab === 'me') ? 'on' : '';
+  document.getElementById('tabs').innerHTML = tabs ? `
+    <a href="#/today" class="${on('today')}">${ICONS.today}I dag</a>
+    <a href="#/programme" class="${on('programme')}">${ICONS.prog}Program</a>
+    <a href="#/chat" class="${on('chat')}">${ICONS.chat}Chat</a>
+    <a href="#/me" class="${on('me')}">${ICONS.me}Mig</a>` : '';
+  document.getElementById('tabs').style.display = tabs ? '' : 'none';
+  document.getElementById('footer').innerHTML = footer;
+  const c = document.getElementById('content'); c.classList.toggle('flush', !!footer); c.scrollTop = 0;
+}
+function openSheet() { document.getElementById('sheet').classList.add('open'); }
+function closeSheet() { document.getElementById('sheet').classList.remove('open'); }
+let toastT; function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
+const greeting = () => `<div class="greeting"><div class="day">Fredag 18. september</div><div class="hi">Hej ${esc(me.name.split(' ')[0])}</div></div>`;
+
+// ---------- TODAY ----------
+function todayCard() {
+  const todays = SYM.programme.filter(e => e.today && !S.done[e.id]);
+  const doneN = SYM.programme.filter(e => S.done[e.id]).length, total = SYM.programme.length;
+  const lastClin = [...S.chat].reverse().find(m => m.who === 'clinician');
+  const msgline = lastClin ? `<a class="msgline" href="#/chat">${circle('MK', true)}<div><div class="who">Mette, psykolog · ${esc(lastClin.at)}</div><div class="tx">${esc(lastClin.text)}</div></div></a>` : '';
+  switch (S.state) {
+    case 'monitored': return `
+      <div class="today"><div class="band"></div>
+        <div class="kicker">Dit ugentlige tjek</div>
+        <h1>Tre korte spørgsmål</h1>
+        <p>Det tager under et minut. Din arbejdsplads ser kun tal for hele afdelinger, aldrig dit svar.</p>
+        <button class="btn" onclick="S.pulseIdx=0;S.pulse={};location.hash='#/pulse'">Start tjekket</button>
+      </div>
+      <div class="quiet-section"><p class="small">Du er ikke i et forløb. Har du brug for at tale med nogen, kan du altid bruge Akut hjælp øverst, eller <a href="#/me" style="color:var(--sym-primary)">bede om en samtale</a>.</p></div>`;
+    case 'referred': return `
+      <div class="today"><div class="band"></div>
+        <div class="kicker">Ny henvendelse</div>
+        <h1>Encounter vil gerne tilbyde dig et forløb</h1>
+        <p>PFA har henvist dig. Ingen får noget at vide, før du har sagt ja eller nej.</p>
+        <button class="btn" onclick="location.hash='#/consent'">Se, hvad det betyder</button>
+      </div>`;
+    case 'screening': {
+      const n = Object.keys(S.scr).length, tot = SYM.instruments.phq9.length;
+      return `
+      <div class="today"><div class="band"></div>
+        <div class="kicker">Første skridt</div>
+        <h1>${n ? 'Gør dine spørgsmål færdige' : 'Ni spørgsmål om, hvordan du har det'}</h1>
+        <p>${n ? `Du har svaret på ${n} af ${tot}. Du kan fortsætte, hvor du slap.` : 'Svarene hjælper Mette og holdet med at finde den rigtige hjælp til dig. Ca. fem minutter.'}</p>
+        ${n ? `<div class="progressbar" style="margin-bottom:16px"><i style="width:${Math.round(100*n/tot)}%"></i></div>` : ''}
+        <button class="btn" onclick="location.hash='#/screening'">${n ? 'Fortsæt' : 'Begynd'}</button>
+      </div>`;
+    }
+    case 'in_care': {
+      const ex = todays[0];
+      const lvl = S.level;
+      return `
+      <div class="today"><div class="band"></div>
+        <div class="kicker">${lvl === 'blended' ? 'Dit program · næste samtale onsdag 14:00' : lvl === 'human' ? 'Dit program · Mette følger med' : 'Dit program'}</div>
+        <h1>${ex ? esc(ex.title) : 'Alt for i dag er gjort'}</h1>
+        ${ex ? `<p>${esc(ex.module)} · ca. ${ex.mins} minutter. ${lvl === 'guided' ? 'Assistenten guider dig igennem.' : 'Skriv til Mette, hvis noget er svært.'}</p>` : '<p>Godt gået. Vi ses i morgen.</p>'}
+        ${msgline}
+        ${ex ? `<button class="btn" onclick="location.hash='#/exercise/${ex.id}'">Start øvelsen</button>` : `<button class="btn secondary" onclick="location.hash='#/programme'">Se dit program</button>`}
+        <div class="sub"><div class="progressbar" style="flex:1"><i style="width:${Math.round(100*doneN/total)}%"></i></div><span class="small">${doneN} af ${total} i denne uge</span></div>
+      </div>
+      ${lvl === 'blended' ? `<div class="card" style="margin-top:14px"><div class="row between"><div class="row">${ICONS.video}<div><h3>Videosamtale med Mette</h3><div class="small">Onsdag 23. sep · 14:00 · 2 af 3 tilbage</div></div></div><a href="#/sessions" style="color:var(--sym-primary)">${ICONS.chev}</a></div></div>` : ''}
+      ${lvl === 'human' ? `<div class="card" style="margin-top:14px"><div class="row">${circle('MK')}<div><h3>Mette svarer i dag</h3><div class="small">Hun læser normalt beskeder mellem 9 og 15.</div></div></div></div>` : ''}`;
+    }
+    case 'post_care': return `
+      <div class="today"><div class="band"></div>
+        <div class="kicker">Efter dit forløb · uge 3 af 12</div>
+        <h1>Hvordan går det?</h1>
+        <p>Et kort tjek hver anden uge, så Mette kan følge med lidt endnu. Du kan altid skrive.</p>
+        <div class="warmbox"><div class="t">Sidste tjek: 4. september</div><div class="s">Arbejdsevne 8 af 10. Fuld tid siden 25. august.</div></div>
+        <button class="btn" onclick="S.pulseIdx=0;S.pulse={};location.hash='#/pulse'">Svar på tre spørgsmål</button>
+      </div>
+      <div class="quiet-section"><a href="#/progress" class="linkbtn">Se din udvikling</a></div>`;
+  }
+}
+function vToday() {
+  chrome({ title: 'Sympatik' });
+  document.getElementById('content').innerHTML = greeting() + todayCard();
+}
+
+// ---------- PULSE ----------
+function vPulse() {
+  const qs = SYM.instruments.pulse, i = S.pulseIdx;
+  if (i >= qs.length) {
+    chrome({ tabs: false });
+    document.getElementById('content').innerHTML = `
+      <div class="empty" style="padding-top:80px"><div class="ic">${ICONS.check}</div>
+        <h1 style="margin-bottom:8px">Tak, ${esc(me.name.split(' ')[0])}</h1>
+        <p>Dit svar er gemt.</p></div>
+      <div class="card">
+        <h3>Det her ser din arbejdsplads</h3>
+        <p style="margin:0">Et gennemsnit for afdelinger med mindst fem svar. Aldrig dit navn, aldrig dit svar.</p>
+      </div>
+      <div class="card">
+        <h3>Det her ser PFA</h3>
+        <p style="margin:0">Det samme tal for hele virksomheden. Ikke afdelinger, ikke personer.</p>
+      </div>
+      <div style="height:20px"></div>
+      <button class="btn" onclick="S.state==='monitored'||S.state==='post_care'?location.hash='#/today':location.hash='#/today'">Færdig</button>
+      <a href="#/me/visibility" class="linkbtn" style="display:block;text-align:center;margin-top:6px">Læs mere om, hvad der deles</a>`;
+    return;
+  }
+  const q = qs[i], numeric = q.scale.length > 6;
+  chrome({ back: i ? null : '#/today', title: 'Pulstjek', tabs: false });
+  document.getElementById('content').innerHTML = `
+    <div class="micro" style="margin-top:8px">Spørgsmål ${i+1} af ${qs.length}</div>
+    <div class="dots">${qs.map((_, k) => `<i class="${k===i?'on':k<i?'done':''}"></i>`).join('')}</div>
+    <div class="q">${esc(q.text)}</div>
+    <div class="small">Den seneste uge</div>
+    <div class="scale ${numeric?'numeric':''}">
+      ${q.scale.map((s, k) => `<button class="${S.pulse[q.id]===k?'picked':''}" onclick="S.pulse['${q.id}']=${k};S.pulseIdx=${i+1};render()">${esc(s)}</button>`).join('')}
+    </div>
+    ${numeric ? '<div class="scale-ends"><span>Kan slet ikke arbejde</span><span>Min bedste arbejdsevne</span></div>' : ''}
+    ${i ? `<button class="btn quiet" style="margin-top:16px" onclick="S.pulseIdx=${i-1};render()">Forrige spørgsmål</button>` : ''}`;
+}
+
+// ---------- SCREENING ----------
+const PHQ = ['Slet ikke', 'Flere dage', 'Mere end halvdelen af dagene', 'Næsten hver dag'];
+function vScreening() {
+  const items = SYM.instruments.phq9;
+  const n = Object.keys(S.scr).length;
+  const seg = `<div class="segment" style="margin:8px 0 12px"><button class="${S.scrMode==='chat'?'on':''}" onclick="S.scrMode='chat';render()">Samtale</button><button class="${S.scrMode==='form'?'on':''}" onclick="S.scrMode='form';render()">Vis som skema</button></div>`;
+  if (n >= items.length) {
+    chrome({ tabs: false });
+    document.getElementById('content').innerHTML = `
+      <div class="empty" style="padding-top:60px"><div class="ic">${ICONS.check}</div><h1 style="margin-bottom:8px">Tak. Det var det sidste.</h1>
+      <p>Mette og holdet ser dine svar i morgen tidlig. Du hører fra os inden for to hverdage, uanset hvad.</p></div>
+      <div class="card"><h3>Hvad sker der nu?</h3><p style="margin:0">En psykolog vurderer, om et forløb giver mening for dig. Assistenten har lavet et forslag, men det er altid et menneske, der beslutter.</p></div>
+      <div style="height:20px"></div>
+      <button class="btn" onclick="S.state='screening';location.hash='#/today'">Til forsiden</button>`;
+    return;
+  }
+  if (S.scrMode === 'form') {
+    chrome({ back: '#/today', title: 'Spørgsmål', tabs: false, footer: `<div style="padding:12px 20px 30px;background:var(--sym-surface);border-top:1px solid var(--sym-border)"><button class="btn" ${n<items.length?'disabled':''} onclick="render()">Send svar</button></div>` });
+    document.getElementById('content').innerHTML = seg + `
+      <h1 style="margin-top:0">Hvor ofte har du de sidste to uger været generet af…</h1>
+      ${items.map((t, k) => `<div class="formitem"><div class="qt">${k+1}. ${esc(t)}</div><div class="opts">${PHQ.map((o, v) => `<button class="${S.scr[k]===v?'picked':''}" onclick="S.scr[${k}]=${v};render()">${esc(o)}</button>`).join('')}</div></div>`).join('')}
+      <p class="small" style="margin-top:14px">${n} af ${items.length} besvaret</p>`;
+    return;
+  }
+  const k = Math.min(S.scrIdx, items.length - 1);
+  const answered = Object.keys(S.scr).map(Number).sort((a, b) => a - b);
+  chrome({ back: '#/today', title: 'Spørgsmål', tabs: false, footer: `<div style="padding:8px 20px 30px;background:var(--sym-page)"><div class="chips">${PHQ.map((o, v) => `<button onclick="S.scr[${k}]=${v};S.scrIdx=${k+1};render()">${esc(o)}</button>`).join('')}</div></div>` });
+  document.getElementById('content').innerHTML = seg + `
+    <div class="micro">Spørgsmål ${k+1} af ${items.length}</div>
+    <div class="progressbar" style="margin:6px 0 16px"><i style="width:${Math.round(100*n/items.length)}%"></i></div>
+    <div class="thread">
+      ${k === 0 && !answered.length ? `<div class="msg">${hexGlyph(true)}<div class="col"><div class="who">Assistent</div><div class="bubble">Hej Sofie. Jeg stiller ni spørgsmål om de sidste to uger. Der er ingen rigtige svar, og du kan holde pause når som helst.</div></div></div>` : ''}
+      ${answered.filter(a => a >= k - 2 && a < k).map(a => `
+        <div class="msg">${hexGlyph(true)}<div class="col"><div class="who">Assistent</div><div class="bubble">${esc(items[a])}?</div></div></div>
+        <div class="msg me">${circle('SA', true, true)}<div class="col"><div class="who">Dig</div><div class="bubble">${esc(PHQ[S.scr[a]])}</div></div></div>`).join('')}
+      <div class="msg">${hexGlyph(true)}<div class="col"><div class="who">Assistent</div><div class="bubble">${k === 8 ? 'Det sidste spørgsmål kan være svært. Du behøver ikke være alene med det, uanset dit svar. ' : ''}Hvor ofte har du været generet af: <strong>${esc(items[k])}</strong>?</div></div></div>
+    </div>
+    ${k > 0 ? `<button class="linkbtn" onclick="S.scrIdx=${k-1};render()">Ret forrige svar</button>` : ''}`;
+}
+
+// ---------- PROGRAMME ----------
+function vProgramme() {
+  chrome({ title: 'Program' });
+  if (S.state !== 'in_care' && S.state !== 'post_care') {
+    document.getElementById('content').innerHTML = `<h1>Program</h1><div class="empty"><div class="ic">${ICONS.check}</div><p class="lead">Du har ikke et program endnu.</p><p>Når en psykolog har set dine svar, får du øvelser her, der passer til dig.</p><button class="btn secondary" onclick="location.hash='#/today'">Til forsiden</button></div>`;
+    return;
+  }
+  const todays = SYM.programme.filter(e => e.today), rest = SYM.programme.filter(e => !e.today);
+  const row = e => `<a href="#/exercise/${e.id}"><span class="circle ${S.done[e.id]?'':'you'}" style="${S.done[e.id]?'':'background:var(--sym-surface-sunken)'}">${S.done[e.id]?ICONS.check:''}</span><div class="grow"><div class="t">${esc(e.title)}</div><div class="s">${esc(e.module)} · ${e.mins} min${S.done[e.id]?' · gjort':''}</div></div><span class="chev">${ICONS.chev}</span></a>`;
+  document.getElementById('content').innerHTML = `
+    <h1>Dit program</h1>
+    <p>${S.level === 'blended' ? 'Øvelser mellem dine samtaler med Mette.' : 'Øvelser valgt til dig. Rækkefølgen er kun et forslag.'}</p>
+    <h2>I dag</h2><div class="list">${todays.map(row).join('')}</div>
+    <h2>Tidligere i ugen</h2><div class="list">${rest.map(row).join('')}</div>
+    <div style="margin-top:20px" class="list"><a href="#/progress"><div class="grow"><div class="t">Din udvikling</div><div class="s">Uge for uge, i almindelige ord</div></div><span class="chev">${ICONS.chev}</span></a>${S.level==='blended'?`<a href="#/sessions"><div class="grow"><div class="t">Videosamtaler</div><div class="s">1 af 3 brugt</div></div><span class="chev">${ICONS.chev}</span></a>`:''}</div>`;
+}
+const STEPS = {
+  e1: ['Skriv tre ting, du gerne vil nå i næste uge. Små ting tæller.', 'Sæt hver ting på en dag. Vælg dage, hvor du har mest energi.', 'Vælg én ting, du kan gøre i morgen, selv hvis dagen bliver dårlig.'],
+  e2: ['Vælg et tidspunkt at stå op på. Det samme hver dag, også i weekenden.', 'Skriv, hvad du vil gøre den sidste halve time før sengetid, uden skærm.', 'Læg telefonen uden for soveværelset i nat.'],
+  e3: ['Beskriv en situation i dag, hvor du fik det dårligt.', 'Hvad tænkte du i situationen? Skriv tanken, som den lød.', 'Hvad ville du sige til en kollega, der tænkte det samme?'],
+  e4: ['Skriv én opgave, du sagde ja til i denne uge, som du helst havde sagt nej til.', 'Hvad kunne du have sagt i stedet? Formulér det i én sætning.', 'Hvem på arbejdet kan du sige det til først?'],
+  e5: ['Sid roligt. Ånd ind gennem næsen i 4 sekunder.', 'Hold vejret i 7 sekunder.', 'Ånd langsomt ud gennem munden i 8 sekunder. Gentag fire gange.'],
+};
+function vExercise(id) {
+  const e = SYM.programme.find(x => x.id === id);
+  if (!e) { location.hash = '#/programme'; return; }
+  chrome({ back: '#/programme', tabs: false, footer: `<div style="padding:12px 20px 30px;background:var(--sym-surface);border-top:1px solid var(--sym-border)"><button class="btn" onclick="S.done['${id}']=true;toast('Gemt. Mette kan se, at du har lavet øvelsen.');location.hash='#/programme'">${S.done[id]?'Gem igen':'Færdig'}</button></div>` });
+  document.getElementById('content').innerHTML = `
+    <div class="micro">${esc(e.module)} · ca. ${e.mins} min</div>
+    <h1 style="margin-top:4px">${esc(e.title)}</h1>
+    <div class="msg" style="max-width:100%;margin-bottom:8px">${hexGlyph(true)}<div class="col"><div class="who">Assistent</div><div class="bubble">Tag det i dit tempo. Skriv kort, og spring over, hvis noget ikke passer i dag.</div></div></div>
+    ${(STEPS[id]||[]).map((s, i) => `<div class="step"><div class="n">${i+1}</div><div style="flex:1"><div style="font-size:16px;line-height:24px">${esc(s)}</div>${id!=='e5'?'<textarea placeholder="Skriv her"></textarea>':''}</div></div>`).join('')}
+    <p class="small" style="margin-top:14px">Det, du skriver, kan Mette læse. Assistenten kan ikke dele det med andre.</p>`;
+}
+
+// ---------- CHAT ----------
+function vChat() {
+  const inCare = S.state === 'in_care' || S.state === 'post_care';
+  chrome({ title: 'Chat', footer: inCare ? `
+    <div class="talk-human"><button onclick="S.chat.push({sys:true,text:'Anmodning sendt til Mette. Hun svarer normalt inden for en arbejdsdag.'});render()">Jeg vil gerne tale med en person</button></div>
+    <div class="composer"><input id="cmp" placeholder="Skriv til assistenten" aria-label="Besked"><button aria-label="Send" onclick="sendMsg()">${ICONS.send}</button></div>` : '' });
+  if (!inCare) {
+    document.getElementById('content').innerHTML = `<h1>Chat</h1><div class="empty"><div class="ic">${ICONS.chat.replace('<svg','<svg width="26" height="26"')}</div><p class="lead">Chatten åbner, når du er i et forløb.</p><p>Indtil da kan du altid nå Akut hjælp øverst på skærmen.</p></div>`;
+    return;
+  }
+  document.getElementById('content').innerHTML = `
+    <div class="row between" style="padding:6px 0 14px"><div class="row">${hexGlyph()}<div><h3>Assistent</h3><div class="small">Mette, psykolog, læser med</div></div></div><span class="chip neutral"><i class="dot" style="background:var(--sym-success)"></i>Overvåget</span></div>
+    <div class="thread">${S.chat.map(m => m.sys ? `<div class="sysline">${esc(m.text)}</div>` : `
+      <div class="msg ${m.who==='person'?'me':m.who==='clinician'?'clin':''}">${m.who==='assistant'?hexGlyph(true):m.who==='clinician'?circle('MK',true):circle('SA',true,true)}
+        <div class="col"><div class="who">${m.who==='assistant'?'Assistent':m.who==='clinician'?'Mette, psykolog':'Dig'} · ${esc(m.at||'Nu')}</div><div class="bubble">${esc(m.text)}</div></div></div>`).join('')}</div>`;
+  const c = document.getElementById('content'); c.scrollTop = c.scrollHeight;
+}
+function sendMsg() {
+  const el = document.getElementById('cmp'); const t = el.value.trim(); if (!t) return;
+  S.chat.push({ who: 'person', at: 'Nu', text: t });
+  S.chat.push({ who: 'assistant', at: 'Nu', text: 'Tak, det har jeg noteret til Mette. Vil du fortsætte med dagens øvelse, eller tale lidt mere om det først?' });
+  render();
+}
+
+// ---------- SESSIONS ----------
+function vSessions() {
+  chrome({ back: '#/programme', title: 'Videosamtaler', tabs: true });
+  if (S.level !== 'blended') { document.getElementById('content').innerHTML = `<h1>Videosamtaler</h1><div class="empty"><p class="lead">Ingen samtaler planlagt.</p><p>Videosamtaler er en del af blended care. Skriv til Mette, hvis du tror, det er noget for dig.</p><button class="btn secondary" onclick="location.hash='#/chat'">Gå til chat</button></div>`; return; }
+  document.getElementById('content').innerHTML = `
+    <h1>Videosamtaler</h1><p>Du har op til tre samtaler med Mette i dit forløb.</p>
+    <div class="card"><div class="row">${ICONS.video}<div><h3>Onsdag 23. september · 14:00</h3><div class="small">45 min · Mette Kjær, psykolog</div></div></div>
+      <div style="height:14px"></div><button class="btn" onclick="toast('Linket åbner 10 minutter før samtalen.')">Deltag</button>
+      <button class="btn quiet" onclick="toast('Skriv til Mette i chatten for at flytte tiden.')">Flyt tiden</button></div>
+    <h2>Brugt</h2>
+    <div class="list"><div style="display:flex;gap:12px;align-items:center;padding:12px 16px"><span class="circle">${ICONS.check}</span><div class="grow"><div class="t">Onsdag 9. september · 14:00</div><div class="s">Gennemført · 1 af 3</div></div></div></div>
+    <p class="small" style="margin-top:14px">Samtalerne foregår i en sikker videoforbindelse. De optages ikke.</p>`;
+}
+
+// ---------- PROGRESS ----------
+function vProgress() {
+  chrome({ back: '#/programme', title: 'Din udvikling' });
+  const T = SYM.trajectory, W = 350, H = 200, pl = 34, pr = 12, pt = 16, pb = 30;
+  const x = i => pl + i * (W - pl - pr) / (T.length - 1);
+  const yP = v => pt + (27 - v) / 27 * (H - pt - pb);
+  const yW = v => pt + (10 - v) / 10 * (H - pt - pb);
+  const line = (f, key) => T.map((d, i) => `${i?'L':'M'}${x(i).toFixed(1)},${f(d[key]).toFixed(1)}`).join(' ');
+  const first = T[0], last = T[T.length - 1];
+  const better = last.phq < first.phq;
+  document.getElementById('content').innerHTML = `
+    <h1>Din udvikling</h1>
+    <p class="lead">${better ? `Siden uge ${first.w.slice(1)} er det blevet lidt lettere. Den sidste uge var tungere igen, og det er normalt.` : 'Der er ikke sket den store ændring endnu. Det er normalt de første uger.'}</p>
+    <div class="card">
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Udvikling over fem uger">
+        <rect x="${pl}" y="${pt}" width="${W-pl-pr}" height="${H-pt-pb}" fill="var(--sym-warm-soft)" opacity=".55"/>
+        <text x="${pl+6}" y="${pt+14}" font-size="10" fill="var(--sym-text-3)">Guidet forløb</text>
+        ${[0,9,18,27].map(v => `<line x1="${pl}" x2="${W-pr}" y1="${yP(v)}" y2="${yP(v)}" stroke="var(--sym-border)"/><text x="${pl-6}" y="${yP(v)+4}" font-size="10" text-anchor="end" fill="var(--sym-text-3)">${v}</text>`).join('')}
+        <path d="${line(yP,'phq')}" fill="none" stroke="var(--sym-primary)" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="${line(yW,'wai')}" fill="none" stroke="var(--sym-info)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linejoin="round"/>
+        ${T.map((d, i) => `<circle cx="${x(i)}" cy="${yP(d.phq)}" r="4" fill="var(--sym-surface)" stroke="var(--sym-primary)" stroke-width="2"/><circle cx="${x(i)}" cy="${yW(d.wai)}" r="4" fill="var(--sym-surface)" stroke="var(--sym-info)" stroke-width="2"/><text x="${x(i)}" y="${H-10}" font-size="11" text-anchor="middle" fill="var(--sym-text-3)">${d.w}</text>`).join('')}
+      </svg>
+      <div class="legend"><span><i style="background:var(--sym-primary)"></i>Hvordan du har det (lavere er bedre)</span></div>
+      <div class="legend" style="margin-top:4px"><span><i style="background:var(--sym-info)"></i>Din arbejdsevne, 0–10 (højere er bedre)</span></div>
+    </div>
+    <div class="card"><h3>Hvad tallene betyder</h3><p style="margin:0">Den første linje er dine svar på de ni spørgsmål, du får hver uge. Den anden er, hvordan du selv vurderer din arbejdsevne. Mette ser det samme billede som dig.</p></div>`;
+}
+
+// ---------- ME ----------
+function vMe() {
+  chrome({ title: 'Mig' });
+  document.getElementById('content').innerHTML = `
+    <h1>Mig</h1>
+    <div class="row" style="margin-bottom:20px">${circle('SA')}<div><h3>${esc(me.name)}</h3><div class="small">${esc(SYM.tenants.find(t=>t.id===me.firma).name)} · via PFA Pension</div></div></div>
+    <div class="list">
+      <a href="#/me/visibility"><div class="grow"><div class="t">Hvad kan min arbejdsplads se?</div><div class="s">Og hvad PFA kan se</div></div><span class="chev">${ICONS.chev}</span></a>
+      <a href="#/consent"><div class="grow"><div class="t">Dit samtykke</div><div class="s">Givet 24. august 2026 · kan trækkes tilbage</div></div><span class="chev">${ICONS.chev}</span></a>
+      <button onclick="toast('Vi sender en kopi af dine data til din e-mail inden for 24 timer.')"><div class="grow"><div class="t">Få en kopi af mine data</div><div class="s">Alt, vi har om dig, som en fil</div></div><span class="chev">${ICONS.chev}</span></button>
+    </div>
+    <h2>Dit hold</h2>
+    <div class="list">
+      <div style="display:flex;gap:12px;align-items:center;padding:12px 16px">${circle('MK')}<div class="grow"><div class="t">Mette Kjær</div><div class="s">Psykolog, Encounter · din behandler</div></div></div>
+      <div style="display:flex;gap:12px;align-items:center;padding:12px 16px">${hexGlyph()}<div class="grow"><div class="t">Assistent</div><div class="s">Hjælper med øvelser · altid under Mettes opsyn</div></div></div>
+    </div>
+    <h2>Konto</h2>
+    <div class="list">
+      <button onclick="toast('Påmindelser: onsdag 08:00. Ændr i næste version.')"><div class="grow"><div class="t">Påmindelser</div><div class="s">Onsdag kl. 08:00</div></div><span class="chev">${ICONS.chev}</span></button>
+      <button onclick="toast('Du logger ind med MitID.')"><div class="grow"><div class="t">Log ind</div><div class="s">MitID</div></div><span class="chev">${ICONS.chev}</span></button>
+      <button onclick="if(confirm('Slet din konto og alle dine data? Det kan ikke fortrydes.'))toast('Anmodning modtaget. Data slettes inden for 30 dage.')"><div class="grow"><div class="t" style="color:var(--sym-danger)">Slet min konto</div><div class="s">Dine data slettes inden for 30 dage</div></div></button>
+    </div>
+    <p class="micro" style="margin-top:20px">Sympatik leveres af Encounter i samarbejde med PFA Pension. Version 0.1, prototype.</p>`;
+}
+function vVisibility() {
+  chrome({ back: '#/me', title: 'Hvad deles?' });
+  const yes = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--sym-success)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`;
+  const no = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--sym-text-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+  document.getElementById('content').innerHTML = `
+    <div class="vis">
+      <h1>Hvad kan min arbejdsplads se?</h1>
+      <p class="lead">Kort sagt: tal for grupper, aldrig dig.</p>
+      <h3>Nordisk Logistik kan se</h3>
+      <ul>
+        <li>${yes}<span>Gennemsnit for afdelinger med mindst fem svar</span></li>
+        <li>${yes}<span>Hvor mange procent der har svaret</span></li>
+        <li>${yes}<span>Hvor mange fra virksomheden der er i et forløb, som et tal</span></li>
+      </ul>
+      <h3>Nordisk Logistik kan ikke se</h3>
+      <ul>
+        <li class="no">${no}<span>Dine svar på pulstjekket</span></li>
+        <li class="no">${no}<span>Om du er i et forløb, eller hvad du taler med Mette om</span></li>
+        <li class="no">${no}<span>Dine spørgeskemaer, øvelser eller din udvikling</span></li>
+      </ul>
+      <h3>PFA Pension kan se</h3>
+      <ul>
+        <li>${yes}<span>At de har henvist dig, og om du sagde ja eller nej</span></li>
+        <li>${yes}<span>Hvilket trin dit forløb er på, uden detaljer</span></li>
+        <li>${yes}<span>Tal for hele virksomheder, ikke afdelinger</span></li>
+      </ul>
+      <h3>PFA Pension kan ikke se</h3>
+      <ul>
+        <li class="no">${no}<span>Noget som helst, du har skrevet eller svaret</span></li>
+      </ul>
+      <h3>Mette og Encounter kan se</h3>
+      <ul>
+        <li>${yes}<span>Alt i dit forløb. Hver gang nogen åbner dine data, bliver det logget, og du kan bede om loggen.</span></li>
+      </ul>
+    </div>`;
+}
+function vConsent() {
+  chrome({ back: '#/today', tabs: false });
+  const given = S.state !== 'referred';
+  document.getElementById('content').innerHTML = `
+    <div class="micro" style="margin-top:8px">${given ? 'Dit samtykke' : 'Før vi går videre'}</div>
+    <h1 style="margin-top:4px">${given ? 'Du har sagt ja til et forløb' : 'PFA har henvist dig til Encounter'}</h1>
+    <p class="lead">${given ? 'Givet 24. august 2026. Du kan trække det tilbage når som helst, og så stopper forløbet.' : 'Det betyder, at PFA mener, at du kan have gavn af hjælp til at holde fast i dit arbejde. Ingen andre ved det endnu.'}</p>
+    <div class="card"><h3>Hvis du siger ja</h3>
+      <ul style="padding-left:18px;margin:6px 0 0;font-size:16px;line-height:24px;color:var(--sym-text)">
+        <li>Du får ni spørgsmål om, hvordan du har det.</li>
+        <li>En psykolog fra Encounter vurderer svarene.</li>
+        <li>PFA får at vide, at du sagde ja. Ikke dine svar.</li>
+        <li>Din arbejdsplads får ingenting at vide.</li>
+      </ul></div>
+    <div class="card"><h3>Hvis du siger nej</h3><p style="margin:0">Så sker der ikke mere. PFA får at vide, at du sagde nej tak, og det får ingen betydning for din pension.</p></div>
+    <div style="height:20px"></div>
+    ${given
+      ? `<button class="btn danger-outline" onclick="if(confirm('Trække samtykket tilbage og stoppe forløbet?'))toast('Mette får besked. Forløbet stopper, og dine data slettes efter 30 dage.')">Træk samtykke tilbage</button>`
+      : `<button class="btn" onclick="S.consent=true;S.state='screening';toast('Tak. Du kan begynde, når du er klar.');location.hash='#/today'">Ja, jeg vil gerne høre mere</button>
+         <button class="btn secondary" onclick="S.consent=false;S.state='monitored';toast('Vi giver PFA besked. Tak for svaret.');location.hash='#/today'">Nej tak</button>`}
+    <a href="#/me/visibility" class="linkbtn" style="display:block;text-align:center;margin-top:8px">Hvem kan se hvad?</a>`;
+}
+
+// ---------- router ----------
+function render() {
+  const h = location.hash || '#/today';
+  const parts = h.replace('#/', '').split('/');
+  closeSheet();
+  switch (parts[0]) {
+    case 'today': return vToday();
+    case 'pulse': return vPulse();
+    case 'screening': return vScreening();
+    case 'programme': return vProgramme();
+    case 'exercise': return vExercise(parts[1]);
+    case 'chat': return vChat();
+    case 'sessions': return vSessions();
+    case 'progress': return vProgress();
+    case 'me': return parts[1] === 'visibility' ? vVisibility() : vMe();
+    case 'consent': return vConsent();
+    default: location.hash = '#/today';
+  }
+}
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>
