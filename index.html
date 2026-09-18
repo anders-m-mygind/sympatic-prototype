@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYMPATIC prototyper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/tokens.css">
+<style>
+  body { margin: 0; background: var(--sym-page); color: var(--sym-text); font-family: var(--sym-font); font-size: var(--sym-fs-body); line-height: var(--sym-lh-body); }
+  main { max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: var(--sym-fs-h1); line-height: var(--sym-lh-h1); margin: 0 0 6px; letter-spacing: 0.02em; }
+  .sub { color: var(--sym-text-2); margin: 0 0 32px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  a.card { display: block; background: var(--sym-surface); border: 1px solid var(--sym-border); border-radius: var(--sym-r-lg); box-shadow: var(--sym-shadow-card); padding: 20px; text-decoration: none; color: inherit; }
+  a.card:hover { border-color: var(--sym-primary); }
+  a.card h2 { font-size: var(--sym-fs-h3); line-height: var(--sym-lh-h3); margin: 0 0 4px; }
+  a.card p { margin: 0; color: var(--sym-text-2); font-size: var(--sym-fs-small); line-height: var(--sym-lh-small); }
+  .pill { display: inline-block; font-size: var(--sym-fs-micro); font-weight: 600; padding: 3px 10px; border-radius: var(--sym-r-pill); background: var(--sym-primary-soft); color: var(--sym-primary); margin-bottom: 12px; }
+  ul { color: var(--sym-text-2); font-size: var(--sym-fs-small); line-height: 22px; padding-left: 18px; }
+  h3 { font-size: var(--sym-fs-h3); margin: 40px 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="pill">Prototype · dummy data</span>
+  <h1>SYMPATIC</h1>
+  <p class="sub">Klikbare prototyper for konsollen og personappen. Ingen backend; alt er dummydata fra <code>shared/data.js</code>.</p>
+  <div class="grid">
+    <a class="card" href="console/index.html#/conference">
+      <h2>Konsol</h2>
+      <p>Behandler (konference, forløb, sag, beskeder, kalender, protokol), Firma, Kunde og Admin. Skift rolle i sidebjælken.</p>
+    </a>
+    <a class="card" href="person/index.html#/today">
+      <h2>Personapp (iOS)</h2>
+      <p>I dag, pulse-tjek, screening, program, chat, fremgang, mig. Skift forløbstilstand ved siden af rammen.</p>
+    </a>
+    <a class="card" href="person/index.html?frame=0#/today">
+      <h2>Personapp, uden ramme</h2>
+      <p>Samme app i fuld bredde. Åbn på en telefon.</p>
+    </a>
+  </div>
+  <h3>Hvad prototypen skal vise</h3>
+  <ul>
+    <li>Konferencen som beslutningskø: AI-forslag, evidens, menneskelig signatur. Hard stops øverst.</li>
+    <li>Datagrænsen: Firma og Kunde ser kun aggregater med n ≥ 5. Skjulte celler er synligt skjulte.</li>
+    <li>Personappen som én ting ad gangen: I dag-kortet skifter form med forløbstilstanden.</li>
+    <li>Hvem taler: cirkel for mennesker, sekskant for assistenten, altid med navn.</li>
+  </ul>
+</main>
+</body>
+</html>
