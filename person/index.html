@@ -74,7 +74,8 @@ body.noframe .island { display: none; }
 
 .content { flex: 1; overflow-y: auto; padding: 8px 20px 24px; scrollbar-width: none; }
 .content::-webkit-scrollbar { display: none; }
-.content.flush { padding-bottom: 0; }
+.content.flush { padding-bottom: 16px; }
+.content.notabs { padding-bottom: 44px; }
 
 .tabs {
   flex: none; display: grid; grid-template-columns: repeat(4, 1fr); height: 84px;
@@ -298,9 +299,11 @@ p.lead { color: var(--sym-text); }
 <script src="../shared/data.js"></script>
 <script>
 // ---------- setup ----------
-if (new URLSearchParams(location.search).get('frame') === '0') document.body.classList.add('noframe');
+const QP = new URLSearchParams(location.search);
+if (QP.get('frame') === '0') document.body.classList.add('noframe');
 const S = { state: 'in_care', level: 'guided', pulse: {}, pulseIdx: 0, scr: {}, scrIdx: 0, scrMode: 'chat', chat: [...SYM.thread], done: {}, consent: null };
 SYM.programme.forEach(e => S.done[e.id] = e.done);
+if (QP.get('state')) { const [st, lv] = QP.get('state').split(':'); S.state = st; S.level = lv || null; }
 const me = SYM.persons.find(p => p.id === 'p1');
 const clin = SYM.clinicians.find(c => c.id === 'b1');
 
@@ -352,7 +355,7 @@ function chrome(opts) {
     <a href="#/me" class="${on('me')}">${ICONS.me}Mig</a>` : '';
   document.getElementById('tabs').style.display = tabs ? '' : 'none';
   document.getElementById('footer').innerHTML = footer;
-  const c = document.getElementById('content'); c.classList.toggle('flush', !!footer); c.scrollTop = 0;
+  const c = document.getElementById('content'); c.classList.toggle('flush', !!footer); c.classList.toggle('notabs', !tabs && !footer); c.scrollTop = 0;
 }
 function openSheet() { document.getElementById('sheet').classList.add('open'); }
 function closeSheet() { document.getElementById('sheet').classList.remove('open'); }
@@ -549,7 +552,7 @@ function vChat() {
     <div class="thread">${S.chat.map(m => m.sys ? `<div class="sysline">${esc(m.text)}</div>` : `
       <div class="msg ${m.who==='person'?'me':m.who==='clinician'?'clin':''}">${m.who==='assistant'?hexGlyph(true):m.who==='clinician'?circle('MK',true):circle('SA',true,true)}
         <div class="col"><div class="who">${m.who==='assistant'?'Assistent':m.who==='clinician'?'Mette, psykolog':'Dig'} · ${esc(m.at||'Nu')}</div><div class="bubble">${esc(m.text)}</div></div></div>`).join('')}</div>`;
-  const c = document.getElementById('content'); c.scrollTop = c.scrollHeight;
+  const c = document.getElementById('content'); requestAnimationFrame(() => { c.scrollTop = c.scrollHeight; });
 }
 function sendMsg() {
   const el = document.getElementById('cmp'); const t = el.value.trim(); if (!t) return;
