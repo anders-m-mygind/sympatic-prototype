@@ -111,7 +111,7 @@ SYM.knowledge = {
     { match: /.*/, text: "Sofie er i guidet forløb siden 28.08 med adfærdsaktivering og søvn. De seneste 7 dage er 3 af 4 øvelser sprunget over, og arbejdsevnen er faldet fra 5 til 4. Assistenten har foreslået en søvnøvelse i stedet for aktivitetsplanen. Der er et åbent niveauskift (D-308) til dig.", cites: ["chat-4", "prot-ba"] },
   ],
   corpora: [
-    { id: "clin", name: "Klinisk reference", count: "1 240 afsnit", meta: "Opdateret 12.09 · Kilde: NKR/Sundhedsstyrelsen + protokol", status: "Indekseret", tone: "success", scope: "Fælles for alle sager" },
+    { id: "clin", name: "Klinisk reference", count: "1 240 afsnit", meta: "Opdateret 12.09 · Kilde: ICD-11 + NKR + protokol", status: "Indekseret", tone: "success", scope: "Fælles for alle sager" },
     { id: "sop", name: "Encounter SOP", count: "86 dokumenter", meta: "2 afventer godkendelse hos Kim Mathiasen", status: "2 afventer", tone: "warning", scope: "Fælles for alle sager" },
     { id: "tx", name: "Sagstransskripter", count: "8 sager", meta: "Embeddes løbende · kun tilgængelig inden for sagen", status: "Løbende", tone: "primary", scope: "Pr. sag · aldrig på tværs" },
   ],
