@@ -1,0 +1,59 @@
+/* SYMPATIC design tokens — v0.1
+   Inherited structure from the Symfonik rewrite (apps/symfonik/src/styles/tokens.css),
+   re-hued to Sympatik teal-green. Two temperatures share these names:
+   the console uses them as-is, the person app overrides scale on [data-temp="person"]. */
+:root {
+  /* brand */
+  --sym-primary: #0F6E5C;
+  --sym-primary-hover: #0B5949;
+  --sym-primary-soft: #E3F1ED;
+  --sym-primary-softer: #F2F8F6;
+  /* ink (sidebar world) */
+  --sym-ink-0: #06211C;
+  --sym-ink-1: #0E3A32;
+  --sym-ink-glow: #158A72;
+  --sym-ink-text: #FFFFFF;
+  --sym-ink-text-muted: #9CC4B9;
+  --sym-ink-active-pill: rgba(255,255,255,0.14);
+  /* surfaces */
+  --sym-page: #FAFAF8;
+  --sym-surface: #FFFFFF;
+  --sym-surface-sunken: #F3F5F3;
+  --sym-border: #E8ECE9;
+  --sym-border-strong: #D5DDD8;
+  /* text */
+  --sym-text: #14211D;
+  --sym-text-2: #4F5F5A;
+  --sym-text-3: #86948F;
+  /* warm accent — person temperature only, fill/border/progress, never text */
+  --sym-warm: #B9925A;
+  --sym-warm-soft: #F4EBDD;
+  /* semantic (unchanged from Symfonik) */
+  --sym-success: #17A24F; --sym-success-soft: #E4F6EB;
+  --sym-warning: #F97316; --sym-warning-soft: #FEF0E3;
+  --sym-danger:  #E8342A; --sym-danger-soft:  #FDE7E4;
+  --sym-info:    #4684F4; --sym-info-soft:    #E8F0FE;
+  /* type */
+  --sym-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --sym-fs-h1: 26px; --sym-lh-h1: 34px;
+  --sym-fs-h2: 20px; --sym-lh-h2: 28px;
+  --sym-fs-h3: 16px; --sym-lh-h3: 24px;
+  --sym-fs-body: 14px; --sym-lh-body: 21px;
+  --sym-fs-small: 13px; --sym-lh-small: 19px;
+  --sym-fs-micro: 11.5px; --sym-lh-micro: 16px;
+  /* shape + depth */
+  --sym-r-sm: 8px; --sym-r-md: 12px; --sym-r-lg: 16px; --sym-r-pill: 999px;
+  --sym-shadow-card: 0 1px 2px rgba(20,33,29,0.04), 0 4px 16px rgba(20,33,29,0.05);
+  --sym-shadow-rail: 0 8px 32px rgba(20,33,29,0.08);
+  --sym-shadow-pop:  0 12px 40px rgba(20,33,29,0.16);
+  /* spacing */
+  --sym-s1: 4px; --sym-s2: 8px; --sym-s3: 12px; --sym-s4: 16px;
+  --sym-s5: 20px; --sym-s6: 24px; --sym-s7: 32px; --sym-s8: 40px;
+}
+[data-temp="person"] {
+  --sym-fs-h1: 24px; --sym-lh-h1: 30px;
+  --sym-fs-h2: 20px; --sym-lh-h2: 26px;
+  --sym-fs-body: 16px; --sym-lh-body: 24px;
+  --sym-fs-small: 14px; --sym-lh-small: 20px;
+  --sym-fs-micro: 12px; --sym-lh-micro: 16px;
+}
