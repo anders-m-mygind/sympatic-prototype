@@ -1,6 +1,6 @@
 /* SYMPATIC design tokens — v0.1
    Inherited structure from the Symfonik rewrite (apps/symfonik/src/styles/tokens.css),
-   re-hued to Sympatik teal-green. Two temperatures share these names:
+   re-hued to Sympatic teal-green. Two temperatures share these names:
    the console uses them as-is, the person app overrides scale on [data-temp="person"]. */
 :root {
   /* brand */

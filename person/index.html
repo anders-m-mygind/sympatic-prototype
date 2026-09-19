@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sympatik · person-app prototype</title>
+<title>Sympatic · person-app prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -422,7 +422,7 @@ function todayCard() {
   }
 }
 function vToday() {
-  chrome({ title: 'Sympatik' });
+  chrome({ title: 'Sympatic' });
   document.getElementById('content').innerHTML = greeting() + todayCard();
 }
 
@@ -625,7 +625,7 @@ function vMe() {
       <button onclick="toast('Du logger ind med MitID.')"><div class="grow"><div class="t">Log ind</div><div class="s">MitID</div></div><span class="chev">${ICONS.chev}</span></button>
       <button onclick="if(confirm('Slet din konto og alle dine data? Det kan ikke fortrydes.'))toast('Anmodning modtaget. Data slettes inden for 30 dage.')"><div class="grow"><div class="t" style="color:var(--sym-danger)">Slet min konto</div><div class="s">Dine data slettes inden for 30 dage</div></div></button>
     </div>
-    <p class="micro" style="margin-top:20px">Sympatik leveres af Encounter i samarbejde med PFA Pension. Version 0.1, prototype.</p>`;
+    <p class="micro" style="margin-top:20px">Sympatic leveres af Encounter i samarbejde med PFA Pension. Version 0.1, prototype.</p>`;
 }
 function vVisibility() {
   chrome({ back: '#/me', title: 'Hvad deles?' });
