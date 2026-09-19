@@ -176,3 +176,50 @@ SYM.knowledge = {
   ],
 };
 
+
+// Sealed session transcripts (blended-care video sessions). Recorded as separate per-participant audio tracks,
+// transcribed locally with whisper.cpp on Sympatic's own server. Speaker = audio channel, not diarization.
+// Append-only: segments are hash-chained, a sha256 seal is written at session end. Corrections are annotations; the original text never changes.
+SYM.transcripts = {
+  "C-1041": [
+    { id: "S-2", date: "16.09.2026", label: "Samtale 16.09", mins: 19, clinician: "Mette Kjær", provider: "LiveKit · egen server",
+      seal: { sha256: "a3f9c1e0", sealed_at: "16.09.2026 14:51", segments: 12, audio_retained: false },
+      segments: [
+        { i: 0, t: "00:12", who: "clinician", channel: "track-2", text: "Hej Sofie. Vi aftalte at kigge på søvnen og på, hvordan ugen er gået med aktivitetsplanen.", conf: 0.96 },
+        { i: 1, t: "00:31", who: "person", channel: "track-1", text: "Ja. Søvnen er stadig det værste. Jeg vågner ved tre-fire-tiden og kan ikke falde i søvn igen.", conf: 0.94 },
+        { i: 2, t: "01:05", who: "clinician", channel: "track-2", text: "Hvor mange nætter i den her uge, cirka?", conf: 0.97 },
+        { i: 3, t: "01:12", who: "person", channel: "track-1", text: "Fire, tror jeg. Måske fem. Weekenden var den værste.", conf: 0.91 },
+        { i: 4, t: "04:40", who: "clinician", channel: "track-2", text: "Lad os holde fast i de faste sengetider fra søvnmodulet, også i weekenden. Det er trin fem i modulet.", conf: 0.95 },
+        { i: 5, t: "08:17", who: "person", channel: "track-1", text: "Jeg tog aftenarbejde med hjem to gange i sidste uge, fordi vi mangler folk i Drift.", conf: 0.88, note: { text: "Rettelse: 'malerarbejde' → 'aftenarbejde'", by: "Mette", at: "17.09" }, orig: "Jeg tog malerarbejde med hjem to gange i sidste uge, fordi vi mangler folk i Drift." },
+        { i: 6, t: "09:02", who: "clinician", channel: "track-2", text: "Det er tredje gang, vi taler om overbelastning. Jeg vil gerne have det med som noget, vi ser på i arbejdsevne-modulet.", conf: 0.93 },
+        { i: 7, t: "12:41", who: "person", channel: "track-1", text: "Jeg sover måske fire timer, og så er jeg helt tom om formiddagen. Det er derfor, jeg springer øvelserne over.", conf: 0.92, cited: ["F-12"] },
+        { i: 8, t: "13:20", who: "clinician", channel: "track-2", text: "Det giver mening. Så lægger vi kun én øvelse ind om dagen i den kommende uge, og den skal være kort.", conf: 0.96 },
+        { i: 9, t: "15:48", who: "person", channel: "track-1", text: "Det kan jeg godt. Én kort ting om dagen.", conf: 0.95 },
+        { i: 10, t: "17:30", who: "clinician", channel: "track-2", text: "Og hvis du får en nat med under fire timer, så må assistenten bytte dagens øvelse ud med søvnøvelsen. Det er aftalt.", conf: 0.94 },
+        { i: 11, t: "18:55", who: "clinician", channel: "track-2", text: "Vi ses om to uger. Skriv til mig i chatten, hvis det bliver for tungt inden da.", conf: 0.97 },
+      ] },
+    { id: "S-1", date: "02.09.2026", label: "Samtale 02.09", mins: 24, clinician: "Mette Kjær", provider: "LiveKit · egen server",
+      seal: { sha256: "7b2e04d9", sealed_at: "02.09.2026 11:26", segments: 12, audio_retained: false },
+      segments: [
+        { i: 0, t: "00:09", who: "clinician", channel: "track-2", text: "Velkommen, Sofie. Det her er vores første samtale. Jeg vil gerne høre, hvordan hverdagen ser ud lige nu.", conf: 0.97 },
+        { i: 1, t: "00:40", who: "person", channel: "track-1", text: "Jeg er træt hele tiden. Jeg går på arbejde, kommer hjem og kan ikke overskue noget.", conf: 0.93 },
+        { i: 2, t: "02:15", who: "clinician", channel: "track-2", text: "Hvordan er søvnen?", conf: 0.98 },
+        { i: 3, t: "02:19", who: "person", channel: "track-1", text: "Dårlig. Jeg ligger og tænker på arbejdet. Vi er to mand nede i Drift, og det ender hos mig.", conf: 0.9 },
+        { i: 4, t: "05:33", who: "clinician", channel: "track-2", text: "Det lyder som en overbelastning, der har stået på et stykke tid. Hvornår begyndte det?", conf: 0.95 },
+        { i: 5, t: "05:50", who: "person", channel: "track-1", text: "Efter sommerferien. August var slem. Jeg havde vagter to weekender i træk.", conf: 0.92, cited: ["F-17"] },
+        { i: 6, t: "09:10", who: "clinician", channel: "track-2", text: "Vi starter med to ting: en aktivitetsplan, der er realistisk, og søvnmodulet. Ikke mere end det.", conf: 0.96 },
+        { i: 7, t: "10:02", who: "person", channel: "track-1", text: "Jeg er bange for, at jeg ikke kan holde fast i det.", conf: 0.94 },
+        { i: 8, t: "10:20", who: "clinician", channel: "track-2", text: "Det er okay at være bange for det. Planen skal være så lille, at den kan holde på en dårlig dag.", conf: 0.95 },
+        { i: 9, t: "16:44", who: "person", channel: "track-1", text: "Kan jeg skrive til assistenten, hvis jeg går i stå?", conf: 0.93 },
+        { i: 10, t: "16:52", who: "clinician", channel: "track-2", text: "Ja. Assistenten hjælper med øvelserne, og jeg læser med. Du taler aldrig med den uden, at jeg kan se det.", conf: 0.96 },
+        { i: 11, t: "23:30", who: "clinician", channel: "track-2", text: "Vi ses om fjorten dage. Tak for i dag, Sofie.", conf: 0.98 },
+      ] },
+  ],
+};
+// transcript segments can be cited as evidence just like chat messages
+SYM.knowledge.cites["tr-S2-7"] = { kind: "transcript", case: "C-1041", session: "S-2", idx: 7, label: "Samtale 16.09 12:41" };
+SYM.knowledge.cites["tr-S1-5"] = { kind: "transcript", case: "C-1041", session: "S-1", idx: 5, label: "Samtale 02.09 05:50" };
+(function(){ const f = SYM.knowledge.factsByCase["C-1041"];
+  const f12 = f.find(x => x.id === "F-12"); if (f12) { f12.ev = ["chat-w36", "tr-S2-7", "chat-3"]; f12.last = "16.09"; f12.n = 7; }
+  const f17 = f.find(x => x.id === "F-17"); if (f17) { f17.ev = ["tr-S1-5", "chat-w36", "chat-w37"]; f17.first = "02.09"; }
+})();

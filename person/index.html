@@ -246,6 +246,22 @@ p.lead { color: var(--sym-text); }
   .today { animation: settle .35s ease-out; }
   @keyframes settle { from { transform: translateY(6px); opacity: .0; } to { transform: none; opacity: 1; } }
 }
+.trsearch { width: 100%; min-height: 44px; border-radius: var(--sym-r-md); border: 1.5px solid var(--sym-border-strong); padding: 8px 14px; font: inherit; font-size: var(--sym-fs-body); background: var(--sym-surface); color: var(--sym-text); }
+.trsearch:focus { outline: none; border-color: var(--sym-primary); }
+.trlist { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.trlist .msg { max-width: 92%; }
+.trlist .msg.clin { align-self: flex-start; }
+.trlist .bubble mark { background: var(--sym-warm-soft); color: inherit; border-radius: 2px; padding: 0 1px; }
+.trlist .msg.me .bubble mark { background: rgba(255,255,255,.28); color: #fff; }
+.trnote { font-size: var(--sym-fs-small); line-height: var(--sym-lh-small); color: var(--sym-text-2); margin: 6px 4px 0; padding-left: 10px; border-left: 2px solid var(--sym-border-strong); }
+.trlist .msg.me .trnote { text-align: right; border-left: 0; border-right: 2px solid var(--sym-border-strong); padding-left: 0; padding-right: 10px; }
+.disc { border: 1px solid var(--sym-border); border-radius: var(--sym-r-lg); background: var(--sym-surface); padding: 0 16px; }
+.disc summary { min-height: 52px; display: flex; align-items: center; font-size: var(--sym-fs-body); font-weight: 500; cursor: pointer; list-style: none; }
+.disc summary::-webkit-details-marker { display: none; }
+.disc summary::after { content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid var(--sym-text-3); border-bottom: 2px solid var(--sym-text-3); transform: rotate(45deg); transition: transform .15s; }
+.disc[open] summary::after { transform: rotate(-135deg); }
+.disc ul { margin: 0; padding: 0 0 12px 18px; color: var(--sym-text-2); font-size: var(--sym-fs-small); line-height: 22px; }
+.disc li + li { margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -316,7 +332,7 @@ const STATES = [
   ['in_care', 'blended', 'I forløb · blended care'],
   ['post_care', null, 'Efterforløb'],
 ];
-const ROUTES = [['#/today','I dag'],['#/pulse','Pulstjek'],['#/screening','Screening (samtale)'],['#/programme','Program'],['#/exercise/e1','Øvelse'],['#/chat','Chat'],['#/sessions','Videosamtaler'],['#/progress','Din udvikling'],['#/me','Mig'],['#/me/visibility','Hvad kan min arbejdsplads se?'],['#/consent','Samtykke']];
+const ROUTES = [['#/today','I dag'],['#/pulse','Pulstjek'],['#/screening','Screening (samtale)'],['#/programme','Program'],['#/exercise/e1','Øvelse'],['#/chat','Chat'],['#/sessions','Videosamtaler'],['#/progress','Din udvikling'],['#/me','Mig'],['#/me/visibility','Hvad kan min arbejdsplads se?'],['#/me/transcripts','Mine samtaler'],['#/consent','Samtykke']];
 
 document.getElementById('stateSel').innerHTML = STATES.map(([st,lv,label],i) =>
   `<label><input type="radio" name="st" value="${i}" ${st===S.state&&lv===S.level?'checked':''}> ${label}</label>`).join('');
@@ -611,6 +627,7 @@ function vMe() {
     <div class="row" style="margin-bottom:20px">${circle('SA')}<div><h3>${esc(me.name)}</h3><div class="small">${esc(SYM.tenants.find(t=>t.id===me.firma).name)} · via PFA Pension</div></div></div>
     <div class="list">
       <a href="#/me/visibility"><div class="grow"><div class="t">Hvad kan min arbejdsplads se?</div><div class="s">Og hvad PFA kan se</div></div><span class="chev">${ICONS.chev}</span></a>
+      <a href="#/me/transcripts"><div class="grow"><div class="t">Mine samtaler</div><div class="s">Ordret, forseglet, kun for dig og Mette</div></div><span class="chev">${ICONS.chev}</span></a>
       <a href="#/consent"><div class="grow"><div class="t">Dit samtykke</div><div class="s">Givet 24. august 2026 · kan trækkes tilbage</div></div><span class="chev">${ICONS.chev}</span></a>
       <button onclick="toast('Vi sender en kopi af dine data til din e-mail inden for 24 timer.')"><div class="grow"><div class="t">Få en kopi af mine data</div><div class="s">Alt, vi har om dig, som en fil</div></div><span class="chev">${ICONS.chev}</span></button>
     </div>
@@ -626,6 +643,42 @@ function vMe() {
       <button onclick="if(confirm('Slet din konto og alle dine data? Det kan ikke fortrydes.'))toast('Anmodning modtaget. Data slettes inden for 30 dage.')"><div class="grow"><div class="t" style="color:var(--sym-danger)">Slet min konto</div><div class="s">Dine data slettes inden for 30 dage</div></div></button>
     </div>
     <p class="micro" style="margin-top:20px">Sympatic leveres af Encounter i samarbejde med PFA Pension. Version 0.1, prototype.</p>`;
+}
+
+let TRQ = '';
+function trMark(text, q) { if (!q) return esc(text); const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'); return esc(text).replace(re, '<mark>$1</mark>'); }
+function vTranscripts(sid) {
+  const sessions = (SYM.transcripts && SYM.transcripts['C-1041']) || [];
+  const store = `<details class="disc"><summary>Sådan opbevares dine samtaler</summary><ul>
+      <li>Optaget som to separate lydspor, ét for dig og ét for Mette. Derfor ved vi altid, hvem der sagde hvad.</li>
+      <li>Transskriberet på Sympatics egen server. Lyden forlader ikke serveren.</li>
+      <li>Lyden slettes, når teksten er forseglet.</li>
+      <li>Teksten er krypteret og kan ikke ændres. Rettelser gemmes som kommentarer ved siden af.</li>
+      <li>Kun du og din behandler kan søge i den. Hver læsning logges.</li></ul></details>`;
+  if (!sid) {
+    chrome({ back: '#/me', title: 'Mine samtaler' });
+    document.getElementById('content').innerHTML = `
+      <h1>Mine samtaler</h1>
+      <p class="lead" style="color:var(--sym-text-2)">Dette er ordret, hvad der blev sagt. Det kan ikke ændres, kun kommenteres. Kun du og Mette kan læse det.</p>
+      <div class="list">${sessions.map(sn => `<a href="#/me/transcripts/${sn.id}"><div class="grow"><div class="t">${esc(sn.label.replace('Samtale', 'Videosamtale'))}</div><div class="s">${sn.mins} min · Mette, psykolog · forseglet ${esc(sn.seal.sealed_at.split(' ')[1])}</div></div><span class="chev">${ICONS.chev}</span></a>`).join('')}</div>
+      <div style="margin-top:16px">${store}</div>`;
+    return;
+  }
+  const sn = sessions.find(x => x.id === sid); if (!sn) { location.hash = '#/me/transcripts'; return; }
+  chrome({ back: '#/me/transcripts', title: sn.label });
+  const q = TRQ.trim();
+  const segs = q ? sn.segments.filter(x => x.text.toLowerCase().includes(q.toLowerCase())) : sn.segments;
+  document.getElementById('content').innerHTML = `
+    <h1>${esc(sn.label.replace('Samtale', 'Videosamtale'))}</h1>
+    <div class="small" style="margin-bottom:12px">${sn.mins} minutter · med Mette, psykolog · forseglet ${esc(sn.seal.sealed_at)}</div>
+    <p class="micro" style="margin:0 0 12px">Dette er ordret, hvad der blev sagt. Det kan ikke ændres, kun kommenteres. Kun du og Mette kan læse det.</p>
+    <input class="trsearch" id="trsearch" type="search" placeholder="Søg i samtalen" value="${esc(TRQ)}" aria-label="Søg i samtalen">
+    ${q ? `<div class="small" style="margin:6px 0 10px">${segs.length} ${segs.length === 1 ? 'sted' : 'steder'} med “${esc(q)}”</div>` : ''}
+    <div class="trlist">${segs.length ? segs.map(sg => `
+      <div class="msg ${sg.who === 'person' ? 'me' : 'clin'}">${sg.who === 'person' ? circle('SA', true, true) : circle('MK', true)}<div class="col"><div class="who">${sg.who === 'person' ? 'Dig' : 'Mette, psykolog'} · ${sg.t}</div><div class="bubble">${trMark(sg.text, q)}</div>${sg.note ? `<div class="trnote"><b>Kommentar fra Mette, ${esc(sg.note.at)}:</b> ${esc(sg.note.text)}. Det oprindelige står uændret ovenfor.</div>` : ''}</div></div>`).join('') : `<p class="small">Ingen steder i samtalen matcher “${esc(q)}”.</p>`}</div>
+    <div style="margin-top:20px">${store}</div>`;
+  const inp = document.getElementById('trsearch');
+  inp.addEventListener('input', () => { TRQ = inp.value; const pos = inp.selectionStart; vTranscripts(sid); const n = document.getElementById('trsearch'); n.focus(); n.setSelectionRange(pos, pos); });
 }
 function vVisibility() {
   chrome({ back: '#/me', title: 'Hvad deles?' });
@@ -700,7 +753,7 @@ function render() {
     case 'chat': return vChat();
     case 'sessions': return vSessions();
     case 'progress': return vProgress();
-    case 'me': return parts[1] === 'visibility' ? vVisibility() : vMe();
+    case 'me': return parts[1] === 'visibility' ? vVisibility() : parts[1] === 'transcripts' ? vTranscripts(parts[2]) : vMe();
     case 'consent': return vConsent();
     default: location.hash = '#/today';
   }

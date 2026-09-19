@@ -300,6 +300,29 @@ td.nowrap{white-space:nowrap}
 .h3{font-size:13.5px;font-weight:600;margin-bottom:6px}
 .p{font-size:13px;color:var(--sym-text-2)}
 .kq td,.kq th{padding-left:12px;padding-right:12px}.kq td:first-child,.kq th:first-child{padding-left:18px}.kq td:last-child{white-space:nowrap;width:1%;padding-right:14px}.kq .confbar i{width:44px}
+.cite.tr:before{content:"";width:7px;height:7px;border:1.5px solid var(--sym-text-3);border-radius:50%;box-sizing:border-box}
+.trs .hd .searchbox{width:220px;padding:5px 10px;font-size:12.5px}
+.trs .trsess{border-top:1px solid var(--sym-border)}
+.trs .sh{display:flex;align-items:center;gap:10px;width:100%;padding:11px 18px;background:none;border:0;font:inherit;text-align:left;cursor:pointer;color:var(--sym-text)}
+.trs .sh:hover{background:var(--sym-surface-sunken)}
+.trs .sh .sq{width:9px;height:9px;background:var(--sym-primary);border-radius:2px;flex:0 0 9px;opacity:.85}
+.trs .sh .ttl{font-weight:600;font-size:13px}
+.trs .sh .meta{font-size:11.5px;color:var(--sym-text-3)}
+.trs .sh .cnt{margin-left:auto;font-size:11.5px;color:var(--sym-text-3);white-space:nowrap}
+.trs .segs{border-top:1px solid var(--sym-border);background:var(--sym-page)}
+.trs .seg{display:grid;grid-template-columns:44px 30px 1fr;gap:10px;padding:9px 18px;border-bottom:1px solid var(--sym-border);align-items:start}
+.trs .seg:last-child{border-bottom:0}
+.trs .seg.hl{background:var(--sym-primary-softer)}
+.trs .seg .t{font-size:11px;color:var(--sym-text-3);font-variant-numeric:tabular-nums;padding-top:7px}
+.trs .seg .av{width:26px;height:26px;font-size:10px}
+.trs .seg .who{font-size:11px;color:var(--sym-text-3);font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.trs .seg .who .ch{font-weight:500;font-family:ui-monospace,Menlo,monospace;font-size:10px;background:var(--sym-surface-sunken);padding:0 5px;border-radius:4px}
+.trs .seg .who .cite{padding:0 7px;font-size:10px;line-height:15px}
+.trs .seg .tx{font-size:13px;line-height:19px;margin-top:2px}
+.trs .seg .tx mark{background:var(--sym-warm-soft);color:inherit;padding:0 1px;border-radius:2px}
+.trs .anno{margin:6px 0 0 12px;border-left:2px solid var(--sym-border-strong);padding:4px 10px;font-size:12px;color:var(--sym-text-2)}
+.trs .anno .lbl{display:block;font-size:10.5px;font-weight:600;color:var(--sym-text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.trs .anno .orig{font-size:11.5px;color:var(--sym-text-3);margin-top:2px}
 </style>
 </head>
 <body>
@@ -384,7 +407,7 @@ function spark(v,color){const W=70,H=22,mn=Math.min(...v),mx=Math.max(...v)||1;c
 function barChart(items,opt={}){const W=opt.w||600,H=opt.h||180,pl=opt.pl||110,pr=40,bh=18,gap=10,mx=Math.max(...items.map(i=>i.v||0))||1;const rows=items.map((it,k)=>{const y=12+k*(bh+gap);if(it.v==null)return `<text x="${pl-8}" y="${y+13}" text-anchor="end" style="fill:var(--sym-text)">${it.l}</text><rect x="${pl}" y="${y}" width="${W-pl-pr}" height="${bh}" rx="4" fill="var(--sym-surface-sunken)"/><text x="${pl+8}" y="${y+13}">n under 5 · skjult</text>`;const w=(W-pl-pr)*it.v/mx;return `<text x="${pl-8}" y="${y+13}" text-anchor="end" style="fill:var(--sym-text)">${it.l}</text><rect x="${pl}" y="${y}" width="${w}" height="${bh}" rx="4" fill="${it.c||"var(--sym-primary)"}"/><text x="${pl+w+6}" y="${y+13}" style="fill:var(--sym-text)">${it.t||it.v}</text>`;}).join("");const h=12+items.length*(bh+gap);return `<svg class="chart" viewBox="0 0 ${W} ${h}">${rows}</svg>`;}
 
 /* ============ state ============ */
-const state = {
+const state = {trq:"",trOpen:{},trFocus:null,
   role:"behandler",
   selDecision:null, signed:{}, verdict:{}, reason:{},
   rawShown:{}, selThread:"C-1041", drafts:{"C-1041":true,"C-1039":true},
@@ -417,6 +440,7 @@ function railHead(t){return `<h3>${t}${I.arrow}</h3>`;}
 /* ============ Graf: grounding helpers ============ */
 const K=SYM.knowledge;
 function citeChip(id){
+  if(K.cites[id]&&K.cites[id].kind==="transcript"){const c=K.cites[id];return `<button class="cite tr" data-trcite="${id}" title="Åbn samtalen ved dette udsagn">${esc(c.label)}</button>`;}
   if(K.cites[id]){const c=K.cites[id];return `<button class="cite chat" data-cite="${id}" title="Åbn tråden ved denne besked">${esc(c.label)}</button>`;}
   if(K.sop[id])return `<button class="cite sopc" data-sop="${id}" title="Vis SOP-trin">${esc(id)}</button>`;
   if(/^F-\d+$/.test(id))return `<button class="cite fact" data-fact="${id}" title="Vis faktum i sagen">${esc(id)}</button>`;
@@ -501,6 +525,20 @@ function vCaseload(){
 function stat(ic,lb,v,d,tone=""){const txt=typeof v==="string"&&v.length>6&&isNaN(parseFloat(v));return `<div class="card stat"><div class="ico">${ic}</div><div><div class="lb">${lb}</div><div class="v ${txt?"txt":""}">${v}</div><div class="d ${tone}">${d}</div></div></div>`;}
 function railCaseload(){return railHead("Kliniker-workspace")+`<div class="sec"><span class="label">Fordeling</span>${["guided","human","blended"].map(l=>{const n=SYM.cases.filter(c=>c.level===l).length;return `<div class="kv"><span>${SYM.levelLabel[l]}</span><b>${n}</b></div>`;}).join("")}</div><div class="sec"><span class="label">Kapacitet i dag</span><div class="kv"><span>Chat-svar udestående</span><b>2</b></div><div class="kv"><span>Videosessioner</span><b>1</b></div><div class="kv"><span>Konference</span><b>08:30</b></div></div><a class="btn primary" href="#/conference">Gå til konference</a>`;}
 
+
+/* ---- sealed session transcripts ---- */
+function trHl(text,q){if(!q)return esc(text);const re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig");return esc(text).replace(re,"<mark>$1</mark>");}
+function trSpeaker(seg,p){return seg.who==="person"?`<span class="av">${esc(p.name.split(" ").map(x=>x[0]).join(""))}</span>`:`<span class="av">MK</span>`;}
+function transcriptsCard(caseId){const sessions=SYM.transcripts&&SYM.transcripts[caseId];if(!sessions)return "";const p=P(C(caseId).person);const q=(state.trq||"").trim();
+  const total=sessions.reduce((a,s)=>a+s.segments.length,0);
+  const hits=q?sessions.reduce((a,s)=>a+s.segments.filter(x=>x.text.toLowerCase().includes(q.toLowerCase())).length,0):null;
+  const open=id=>q?true:state.trOpen[id];
+  return `<div class="card trs"><div class="hd"><h3>Samtaler (forseglede transskripter)</h3><div class="r"><input class="searchbox" id="trq" placeholder="Søg i samtaler" value="${esc(state.trq||"")}"><span class="chip neutral nodot">${q?`${hits} udsagn matcher`:`${sessions.length} samtaler · ${total} udsagn`}</span></div></div>
+  <div class="bd" style="padding-bottom:8px"><div class="sub">Optaget som separate lydspor pr. deltager og transskriberet lokalt (whisper.cpp). Taler = lydspor, ikke diarisering. Teksten er append-only og forseglet; rettelser gemmes som annotationer.</div></div>
+  ${sessions.map(sn=>{const segs=q?sn.segments.filter(x=>x.text.toLowerCase().includes(q.toLowerCase())):sn.segments;const isOpen=open(sn.id);
+    return `<div class="trsess ${isOpen?"expanded":""}"><button class="sh" data-tropen="${sn.id}"><span class="sq"></span><span class="ttl">${esc(sn.label)}</span><span class="meta">${sn.mins} min · ${esc(sn.clinician)} · ${esc(sn.provider)}</span><span class="chip success nodot" title="Forseglet ${esc(sn.seal.sealed_at)} · ${sn.seal.segments} udsagn hash-kædet">Forseglet · sha256 ${sn.seal.sha256}…</span>${sn.seal.audio_retained?"":`<span class="chip neutral nodot" title="Lyd slettet efter forsegling">Lyd slettet</span>`}<span class="cnt">${q?segs.length+" match":sn.segments.length+" udsagn"}</span></button>
+    ${isOpen?`<div class="segs">${segs.length?segs.map(sg=>`<div class="seg ${state.trFocus===sn.id+":"+sg.i?"hl":""}" id="tr-${sn.id}-${sg.i}"><div class="t">${sg.t}</div>${trSpeaker(sg,p)}<div class="body"><div class="who">${sg.who==="person"?esc(p.name):"Mette Kjær, psykolog"} <span class="ch">${sg.channel}</span>${sg.cited?sg.cited.map(f=>`<button class="cite fact" data-fact="${f}" title="Citeret af faktum">cited by ${f}</button>`).join(""):""}</div><div class="tx">${trHl(sg.text,q)}</div>${sg.note?`<div class="anno"><span class="lbl">Annotation · original uændret</span>${esc(sg.note.text)} · ${esc(sg.note.by)} ${esc(sg.note.at)}<div class="orig">Original: “${esc(sg.orig||"")}”</div></div>`:""}</div></div>`).join(""):`<div class="sub" style="padding:10px 18px">Ingen udsagn matcher “${esc(q)}” i denne samtale.</div>`}</div>`:""}</div>`;}).join("")}
+  <div class="bd" style="border-top:1px solid var(--sym-border)"><div class="sub">Læsning af et transskript logges. Kun sagens behandler og personen selv kan søge i det. Tekst er krypteret i hvile; lyden slettes ved forsegling.</div></div></div>`;}
 function vCase(id){
   const c=C(id);if(!c)return topbar("Forløb ikke fundet","");const p=P(c.person),b=c.clinician?B(c.clinician):null;
   const decs=SYM.decisions.filter(d=>d.case===c.id);
@@ -515,6 +553,7 @@ function vCase(id){
     <div class="card"><div class="hd"><h3>Plan</h3><div class="r"><span class="chip primary">${c.level?SYM.levelLabel[c.level]:"—"}</span></div></div><div class="bd"><div class="chk">${SYM.programme.map(e=>`<label><input type="checkbox" ${e.done?"checked":""} disabled><span>${esc(e.title)}<div class="sub">${e.module} · ${e.mins} min${e.today?" · i dag":""}</div></span></label>`).join("")}</div></div></div>
   </div>
   ${groundCard(c.id)}
+  ${transcriptsCard(c.id)}
   <div class="grid32">
     <div class="card"><div class="hd"><h3>Tidslinje</h3></div><div class="bd"><div class="tl">${tl.map(t=>`<div class="it ${t.cls}"><div class="w">${t.w}</div><div class="tt">${esc(t.tt)}</div><div class="tx">${esc(t.tx)}</div></div>`).join("")}</div></div></div>
     <div class="card"><div class="hd"><h3>Protokol-tjekliste</h3><div class="r"><span class="chip success">4 / 6</span></div></div><div class="bd"><div class="chk">${["Psykoedukation gennemført","Adfærdsaktivering påbegyndt","Søvnmodul introduceret","Arbejdsevne-mål aftalt","Arbejdspladsdialog planlagt","Tilbagefaldsplan"].map((t,i)=>`<label><input type="checkbox" ${i<4?"checked":""}><span>${t}</span></label>`).join("")}</div>
@@ -603,7 +642,7 @@ const VIEWS={conference:[vConference,railConference],caseload:[vCaseload,railCas
   tenants:[vTenants,railAdmin],people:[vPeople,railAdmin],"protocol-edit":[vProtocolEdit,railAdmin],instruments:[vInstruments,railAdmin],models:[vModels,railAdmin],knowledge:[vKnowledge,railAdmin],audit:[vAudit,railAdmin],data:[vData,railAdmin]};
 function render(){
   let h=location.hash||"#/conference";if(!h.startsWith("#/"))h="#/conference";
-  const [path,qs]=h.slice(2).split("?");const [key,arg]=path.split("/");if(qs){const m=qs.match(/sel=([^&]+)/);if(m)state.selDecision=m[1];const a=qs.match(/ask=([^&]+)/);if(a){state.askq=decodeURIComponent(a[1]);state.ask=answerFor(state.askq);}const ci=qs.match(/cite=([^&]+)/);if(ci)state.sheet=decodeURIComponent(ci[1]);const fo=qs.match(/focus=(\d+)/);if(fo){state.msgFocus=+fo[1];}}
+  const [path,qs]=h.slice(2).split("?");const [key,arg]=path.split("/");if(qs){const m=qs.match(/sel=([^&]+)/);if(m)state.selDecision=m[1];const a=qs.match(/ask=([^&]+)/);if(a){state.askq=decodeURIComponent(a[1]);state.ask=answerFor(state.askq);}const ci=qs.match(/cite=([^&]+)/);if(ci)state.sheet=decodeURIComponent(ci[1]);const fo=qs.match(/focus=(\d+)/);if(fo){state.msgFocus=+fo[1];}const tq=qs.match(/q=([^&]+)/);if(tq){state.trq=decodeURIComponent(tq[1]);}}
   const v=VIEWS[key]||VIEWS.conference;
   const role=ROUTE_ROLE[key]||"behandler";if(role!==state.role)state.role=role;
   renderNav();
@@ -617,10 +656,12 @@ $("#role").addEventListener("change",e=>{state.role=e.target.value;location.hash
 
 /* delegated clicks */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-d],[data-f],[data-batch],[data-v],#sign,[data-href],#raw,[data-thread],[data-send],[data-edit],[data-discard],[data-sess],[data-mod],[data-toast],#refCreate,#refReset,#campToggle,[data-tenant],[data-sel],[data-cite],[data-sop],[data-fact],[data-fconfirm],[data-freject],[data-rqconfirm],[data-rqreject],[data-showdropped],[data-ask],#askSend,#sheetClose,#sheetwrap");
+  const t=e.target.closest("[data-d],[data-f],[data-batch],[data-v],#sign,[data-href],#raw,[data-thread],[data-send],[data-edit],[data-discard],[data-sess],[data-mod],[data-toast],#refCreate,#refReset,#campToggle,[data-tenant],[data-sel],[data-cite],[data-sop],[data-fact],[data-fconfirm],[data-freject],[data-rqconfirm],[data-rqreject],[data-showdropped],[data-ask],#askSend,#sheetClose,#sheetwrap,[data-tropen],[data-trcite]");
   if(!t)return;
   if(t.dataset.toast){toast(t.dataset.toast);return;}
   if(t.dataset.cite){const c=K.cites[t.dataset.cite];state.selThread=c.case;state.msgFocus=c.idx;state.sheet=null;if(location.hash.startsWith("#/messages"))render();else location.hash="#/messages";return;}
+  if(t.dataset.tropen){state.trOpen[t.dataset.tropen]=!state.trOpen[t.dataset.tropen];render();return;}
+  if(t.dataset.trcite){const c=K.cites[t.dataset.trcite];state.trOpen[c.session]=true;state.trFocus=c.session+":"+c.idx;state.trq="";const target="#/case/"+c.case;if(location.hash.split("?")[0]===target)render();else location.hash=target;setTimeout(()=>{const el=$("#tr-"+c.session+"-"+c.idx);if(el)el.scrollIntoView({block:"center"});},0);return;}
   if(t.dataset.sop){state.sheet=t.dataset.sop;render();return;}
   if(t.dataset.fact){state.factHl=t.dataset.fact;render();const el=$("#fact-"+t.dataset.fact);if(el)el.scrollIntoView({block:"center"});return;}
   if(t.dataset.fconfirm||t.dataset.freject){const id=t.dataset.fconfirm||t.dataset.freject;const cid=location.hash.split("/")[2].split("?")[0];const f=factOf(cid,id);if(f){f.status=t.dataset.fconfirm?"confirmed":"rejected";f.by="Mette";f.changed=true;}toast((t.dataset.fconfirm?"Bekræftet ":"Afvist ")+id+" · Kodning rettet · logges");render();return;}
@@ -650,6 +691,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("keydown",e=>{if(e.target.id==="askq"&&e.key==="Enter"){e.preventDefault();$("#askSend").click();}if(e.key==="Escape"&&state.sheet){state.sheet=null;render();}});
 document.addEventListener("input",e=>{if(e.target.id==="askq")state.askq=e.target.value;});
+document.addEventListener("input",e=>{if(e.target.id==="trq"){state.trq=e.target.value;const pos=e.target.selectionStart;render();const n=$("#trq");if(n){n.focus();n.setSelectionRange(pos,pos);}}});
 document.addEventListener("change",e=>{if(e.target.id==="screens"&&e.target.value){location.hash=e.target.value;}});
 document.addEventListener("input",e=>{if(e.target.id==="audq"){state.audq=e.target.value;const pos=e.target.selectionStart;render();const n=$("#audq");n.focus();n.setSelectionRange(pos,pos);}if(e.target.id==="reason"){state.reason[state.selDecision]=e.target.value;}});
 render();
